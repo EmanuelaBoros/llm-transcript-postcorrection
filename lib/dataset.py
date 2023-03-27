@@ -1,6 +1,64 @@
 import torch
 import pandas as pd
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset as TorchDataset
+from datasets import Dataset
+
+"""
+Dataset classes for all text correction datasets
+"""
+
+class OCRGTDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
+
+class OverproofDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
+class ImpressoFrakturDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
+
+class ImpressoHIPEDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
+
+class RETASDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
+
+class OCR19thSACDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
+
+class DBNLDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
+
+class ICDARDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
+
+class AJMCDataset(Dataset):
+
+    def __init__(self, filename):
+        pass
+
 
 
 def _read_conll(path, encoding='utf-8', sep=None, indexes=None, dropna=True):
@@ -151,7 +209,7 @@ class OCRDataset(Dataset):
         return self.df
 
 
-class NERDataset(Dataset):
+class NERDataset(TorchDataset):
 
     def __init__(self, filename):
 
