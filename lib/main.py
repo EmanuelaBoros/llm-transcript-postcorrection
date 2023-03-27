@@ -42,33 +42,6 @@ def prompt_md(prompt: str, gen_text: str) -> str:
 
     return f"{prompt_bold}{gen_text}"
 
-class GPT_3:
-    def __init__(self, api_key):
-        openai.api_key = api_key
-
-        self.completion = openai.Completion
-        self.options = {
-            'engine': 'text-davinci-002',
-            'temperature': 0.25,
-            'top_p': 1,
-            'frequency_penalty': 0,
-            'presence_penalty': 0,
-            'max_tokens': 512
-        }
-
-    def __call__(self, prompt, options=None):
-        return self.prediction(prompt, options)
-
-    def prediction(self, prompt, options=None):
-        if not options:
-            options = self.options
-
-        return self.completion.create(prompt=prompt, **options)['choices'][0]['text']
-
-    def summarize(self, text):
-        prompt = f'Try to summarize the following text as best you can!\n\n{text}'
-
-        return self.prediction(prompt=prompt)
 
 
 def gpt3_generate(
