@@ -21,8 +21,8 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-GENERAL_MODELS = ["text-davinci-003", "text-davinci-002", "text-curie-001"]
-CHAT_MODELS = ["gpt-3.5-turbo"] # optimized for chat
+MODELS = ["gpt-4", "gpt-3.5-turbo", "text-davinci-003", "davinci", "bigscience/bloom-1b3"]
+# CHAT_MODELS = ["gpt-3.5-turbo"] # optimized for chat
 
 
 def gpt3_query(headers, data, model) -> str:
@@ -44,7 +44,7 @@ def prompt_md(prompt: str, gen_text: str) -> str:
 
 
 
-def gpt3_generate(
+def generate(
     prompt: str = "prompt.txt",
     config_file: str = "config.yml",
     markdown: bool = True,
@@ -68,7 +68,6 @@ def gpt3_generate(
     sample_delim = "\n---\n" if markdown else ("=" * 20)
 
     openai.api_key = c['SECRET_KEY']
-
 
     headers = {
         "Content-Type": "application/json",
@@ -147,4 +146,4 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
     # fire.Fire(gpt3_generate)
     dataset = NERDataset(args.input_file)
-    import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
