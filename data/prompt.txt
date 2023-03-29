@@ -1,0 +1,4 @@
+Correct the spelling of the following text from on optical character recognition applied on a historical document:
+
+Text: {{TEXT}}
+Corrected text:
