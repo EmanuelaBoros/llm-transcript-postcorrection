@@ -12,7 +12,7 @@ from tqdm import trange
 from data import NERDataset
 # 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
 
-logger = logging.getLogger("gpt3-experiments")
+logger = logging.getLogger("gpt-experiments")
 logger.setLevel(logging.INFO)
 
 logging.basicConfig(

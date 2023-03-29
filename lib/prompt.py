@@ -1,5 +1,8 @@
 import openai
 from transformers import BloomForCausalLM, BloomTokenizerFast
+from transformers import AutoTokenizer, OPTModel
+import torch
+
 
 class Prompt:
 
@@ -30,12 +33,42 @@ class GPTPrompt(Prompt):
 
         return self.completion.create(prompt=prompt, **options)['choices'][0]['text']
 
-    # def summarize(self, text):
-    #     prompt = f'Try to summarize the following text as best you can!\n\n{text}'
-    #
-    #     return self.prediction(prompt=prompt)
+class OPTPrompt(Prompt):
 
-class BLOOMPrompt(Prompt)
+    def __init__(self, api_key, model="facebook/opt-350m"):
+
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
+        self.model = OPTModel.from_pretrained(model)
+
+        def prediction(self, prompt, options=None):
+            if not options:
+                options = self.options
+
+            inputs = self.tokenizer(prompt, return_tensors="pt")
+
+            # Greedy Search
+            results = self.tokenizer.decode(self.model.generate(inputs["input_ids"],
+                                                                max_length=self.options.max_tokens
+                                                                )[0])
+
+            # Beam Search
+            results = self.tokenizer.decode(self.model.generate(inputs["input_ids"],
+                                                                max_length=self.options.max_tokens,
+                                                                num_beams=2,
+                                                                no_repeat_ngram_size=2,
+                                                                early_stopping=True
+                                                                )[0])
+
+            # Sampling Top-k + Top-p
+            results = self.tokenizer.decode(self.model.generate(inputs["input_ids"],
+                                                                max_length=self.options.max_tokens,
+                                                                do_sample=True,
+                                                                top_k=50,
+                                                                top_p=0.9
+                                                                )[0])
+
+            return results
+class BLOOMPrompt(Prompt):
 
     def __init__(self, api_key, model="bigscience/bloom-1b3"):
         self.model = BloomForCausalLM.from_pretrained(model)
