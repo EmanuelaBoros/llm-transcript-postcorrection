@@ -9,8 +9,10 @@ import fire
 import argparse
 import time
 from tqdm import trange
-from data import NERDataset
+from dataset import NERDataset
 # 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
+from prompt import Prompt
+import importlib
 
 logger = logging.getLogger("gpt-experiments")
 logger.setLevel(logging.INFO)
@@ -45,16 +47,17 @@ def prompt_md(prompt: str, gen_text: str) -> str:
 
 
 def generate(
-    prompt: str = "prompt.txt",
-    config_file: str = "config.yml",
+    input_dir, output_dir,
+    prompt: str = "../data/prompt.txt",
+    config_file: str = "../data/config.yml",
     markdown: bool = True,
     query_async: bool = False,
 ) -> None:
     """
     Generates texts via GPT-3 and saves them to a file.
     """
-    with open(config_file, "r", encoding="utf-8") as f:
-        c = yaml.safe_load(f)
+    with open(os.path.join(input_dir, config_file), "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
 
     # If prompt is a file path, load the file as the prompt.
     if os.path.exists(prompt):
@@ -67,45 +70,53 @@ def generate(
     extension = "md" if markdown else "txt"
     sample_delim = "\n---\n" if markdown else ("=" * 20)
 
-    openai.api_key = c['SECRET_KEY']
+    openai.api_key = config['SECRET_KEY']
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {c['SECRET_KEY']}",
+        "Authorization": f"Bearer {config['SECRET_KEY']}",
     }
 
-    with open('sentences.txt', 'r') as f:
+    for model in config['models']:
+        # import pdb;pdb.set_trace()
+        (model_name, model_class), = model.items()
+        module_name = 'prompt'
+        module = importlib.import_module(module_name)
+        class_ = getattr(module, model_class)
+        instance = class_(model=model_name)
+
+    with open(os.path.join(input_dir, 'test.txt'), 'r') as f:
         sentences = f.readlines()
 
-    for text in sentences:
-        data = {
-            "prompt": ''.join([prompt, text]),
-            "max_tokens": c["max_tokens"],
-        }
-
-        loop = asyncio.get_event_loop()
-
-        for temp in c["temperatures"]:
-            data.update({"temperature": temp})
-
-            n = c["num_generate"] if temp != 0.0 else 1
-            n_str = "samples" if n > 1 else "sample"
-            output_file = f"output_{str(temp).replace('.', '_')}.{extension}"
-            logger.info(f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
-
-
-            gen_texts = []
-            for _ in trange(n):
-                gen_texts.append(gpt3_query(headers, data))
-                time.sleep(30)
-
-            with open(output_file, "w", encoding="utf-8") as f:
-                for gen_text in gen_texts:
-                    if gen_text:
-                        gen_text = prompt_md(prompt, gen_text) if markdown else gen_text
-                        f.write("{}\n{}\n".format(gen_text, sample_delim))
-
-        loop.close()
+    # for sentence in sentences:
+    #     data = {
+    #         "prompt": prompt.replace('{{TEXT}}', sentence),
+    #         "max_tokens": config["max_tokens"],
+    #     }
+    #
+    #     loop = asyncio.get_event_loop()
+    #
+    #     for temp in config["temperatures"]:
+    #         data.update({"temperature": temp})
+    #
+    #         n = config["num_generate"] if temp != 0.0 else 1
+    #         n_str = "samples" if n > 1 else "sample"
+    #         output_file = f"output_{str(temp).replace('.', '_')}.{extension}"
+    #         logger.info(f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
+    #
+    #
+    #         gen_texts = []
+    #         for _ in trange(n):
+    #             gen_texts.append(gpt3_query(headers, data))
+    #             time.sleep(30)
+    #
+    #         with open(output_file, "w", encoding="utf-8") as f:
+    #             for gen_text in gen_texts:
+    #                 if gen_text:
+    #                     gen_text = prompt_md(prompt, gen_text) if markdown else gen_text
+    #                     f.write("{}\n{}\n".format(gen_text, sample_delim))
+    #
+    #     loop.close()
 
 
 if __name__ == "__main__":
@@ -113,7 +124,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--input_file",
+        "--input_dir",
         type=str,
     )
     parser.add_argument(
@@ -134,16 +145,16 @@ if __name__ == "__main__":
     #     const=logging.DEBUG,
     #     default=logging.WARNING,
     # )
-    # parser.add_argument(
-    #     "-v",
-    #     "--verbose",
-    #     help="Be verbose",
-    #     action="store_const",
-    #     dest="loglevel",
-    #     const=logging.INFO,
-    # )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Be verbose",
+        action="store_const",
+        dest="loglevel",
+        const=logging.INFO,
+    )
 
     args, _ = parser.parse_known_args()
-    # fire.Fire(gpt3_generate)
-    dataset = NERDataset(args.input_file)
+    fire.Fire(generate)
+    # dataset = NERDataset(args.input_file)
     # import pdb;pdb.set_trace()

@@ -1,0 +1,21 @@
+
+SECRET_KEY: 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
+
+model: davinci
+num_generate: 10
+max_tokens: 512
+
+# Lists for loops
+models:
+  - gpt-4: GPTPrompt
+  - gpt-3.5-turbo: GPTPrompt
+  - text-davinci-003: GPTPrompt
+  - davinci: GPTPrompt
+  - facebook/opt-350m: OPTPrompt
+  - google/flan-t5-xxl: FlanT5Prompt
+  - bigscience/bloom-1b3: BLOOMPrompt
+  - EleutherAI/gpt-neox-20b: GPTNeoxPrompt
+
+temperatures:
+  - 0.7
+  - 1.0
