@@ -8,7 +8,7 @@ import asyncio
 import fire
 import argparse
 import time
-from tqdm import trange
+from tqdm import trange, tqdm
 from dataset import NERDataset
 # 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
 from prompt import Prompt
@@ -48,12 +48,11 @@ def gpt3_query(headers, data, model) -> str:
     # return r_json["choices"][0]["text"]
 
 
-def prompt_md(prompt: str, gen_text: str) -> str:
-    lines = prompt.split("\n")
-    prompt_bold = "\n".join(
-        [f"**{line}**" if line != "" else line for line in lines])
-
-    return f"{prompt_bold}{gen_text}"
+def get_dict(list_of_dicts: list):
+    return_list = {}
+    for list_entry in list_of_dicts:
+        return_list |= list_entry
+    return return_list
 
 
 def generate(
@@ -74,10 +73,12 @@ def generate(
 
     for model in config['models']:
 
-        (model_name, details), = model.items()
+        (model_name, experiment_details), = model.items()
 
-        model_class = details[0]['class']
-        prompt = os.path.join(prompt_dir, details[1]['prompt'])
+        experiment_details = get_dict(experiment_details)
+
+        model_class = experiment_details['class']
+        prompt = os.path.join(prompt_dir, experiment_details['prompt'])
 
         # If prompt is a file path, load the file as the prompt.
         if os.path.exists(prompt):
@@ -99,12 +100,13 @@ def generate(
                     input_file = os.path.join(root, name)
                     dataset_name = root.split('/')[-1]
                     output_file = os.path.join(
-                        output_dir,
-                        'results_{}_{}.jsonl'.format(dataset_name, model_name).replace(
-                            '/',
-                            '-'))
+                        output_dir, 'results_{}_{}.jsonl'.format(
+                            dataset_name, model_name).replace(
+                            '/', '-'))
 
-                    logger.info('Predictions for {} are saved in {}'.format(input_file, output_file))
+                    logger.info(
+                        'Predictions for {} are saved in {}'.format(
+                            input_file, output_file))
 
                     with jsonlines.open(output_file, 'w') as f:
 
@@ -114,31 +116,54 @@ def generate(
                                 correct_text = json_line["correct_text"]
 
                                 data = {
-                                    "prompt": prompt.replace('{{TEXT}}', sentence),
+                                    "prompt": prompt.replace(
+                                        '{{TEXT}}',
+                                        sentence),
                                     "max_tokens": config["max_tokens"],
-                                    "correct_text": correct_text
-                                }
-                                logger.info('--Text: {}'.format(data['prompt']))
+                                    "correct_text": correct_text}
+                                logger.info(
+                                    '--Text: {}'.format(data['prompt']))
 
-                                loop = asyncio.get_event_loop()
+                                if 'temperatures' in experiment_details:
+                                    loop = asyncio.get_event_loop()
+                                    for temp in tqdm(
+                                        experiment_details["temperatures"], total=len(
+                                            experiment_details["temperatures"])):
+                                        data.update({"temperature": temp})
 
-                                for temp in config["temperatures"]:
-                                    data.update({"temperature": temp})
+                                        n = experiment_details["num_generate"] if temp != 0.0 else 1
+                                        n_str = "samples" if n > 1 else "sample"
 
-                                    n = config["num_generate"] if temp != 0.0 else 1
+                                        logger.info(
+                                            f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
+
+                                        for idx in trange(n):
+
+                                            result = instance.prediction(
+                                                data['prompt'])
+                                            data.update({"prediction": result})
+                                            data.update({"num_generate": idx})
+
+                                        f.write(data)
+
+                                    loop.close()
+                                else:
+                                    # Simple prediction
+                                    loop = asyncio.get_event_loop()
+                                    n = experiment_details["num_generate"]
                                     n_str = "samples" if n > 1 else "sample"
 
                                     logger.info(
-                                        f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
+                                        f"Writing {n} {n_str} to {output_file}.")
 
-                                    for _ in trange(n):
-
-                                        result = instance.prediction(data['prompt'])
+                                    for idx in trange(n):
+                                        result = instance.prediction(
+                                            data['prompt'])
                                         data.update({"prediction": result})
+                                        data.update({"num_generate": idx})
 
                                     f.write(data)
-
-                                loop.close()
+                                    loop.close()
 
 
 if __name__ == "__main__":
