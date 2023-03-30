@@ -36,16 +36,14 @@ python main.py --input_dir ../data/datasets \
 
 ### Prompts
 #### Zero-shot 
+
+*Example gpt-4:*
 ```json
-{"prompt": "Correct the spelling and grammar of the following incorrect text from on optical character recognition (OCR) applied to a historical document:\n\n
-Incorrect text: The European Commi66ion said on Thursday it disagreed with German advice to consumers to shun Brifish ss ..ff lamb until scientists determine 
-whether mad cow disease can be transmitted to sheep.\nThe corrected text is:", 
+{"prompt": "Correct the spelling and grammar of the following incorrect text from on optical character recognition (OCR) applied to a historical document:\n\nIncorrect text: The European Commi66ion said on Thursday it disagreed with German advice to consumers to shun Brifish ss ..ff lamb until scientists determine whether mad cow disease can be transmitted to sheep.\nThe corrected text is:", 
 "max_tokens": 512, 
-"correct_text": "The European Commission said on Thursday it disagreed with German advice to consumers to shun British lamb until scientists 
-determine whether mad cow disease can be transmitted to sheep.", 
+"correct_text": "The European Commission said on Thursday it disagreed with German advice to consumers to shun British lamb until scientists determine whether mad cow disease can be transmitted to sheep.", 
 "temperature": 0.1, 
-"prediction": "The European Commission said on Thursday it disagreed with German advice to consumers to shun British lamb until scientists 
-determine whether mad cow disease can be transmitted to sheep.", "num_generate": 0}
+"prediction": "The European Commission said on Thursday it disagreed with German advice to consumers to shun British lamb until scientists determine whether mad cow disease can be transmitted to sheep.", "num_generate": 0}
 ```
 #### 1-2-3 shot
 
