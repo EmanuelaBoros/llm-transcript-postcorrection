@@ -23,3 +23,16 @@ Costs GPT can be seen at our [OpenAI group](https://platform.openai.com/account/
 #### Zero-shot vs. 1-2-3 shot
 
 ### Models
+- gpt-3.5-turbo
+- gpt-4
+- text-curie-001
+- text-davinci-003
+- davinci
+- text-davinci-002
+- facebook/opt-350m: # OPT is very inconsistent
+- google/flan-t5-base: # Tensorflow issue
+- EleutherAI/gpt-neox-20b
+- bigscience/bloom
+- cerebras/Cerebras-GPT-1.3B
+
+
