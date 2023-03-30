@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.DS_Store
 
 # C extensions
 *.so
@@ -9,6 +10,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+OLD/
+*.OLD
 develop-eggs/
 dist/
 downloads/

@@ -1,16 +1,31 @@
 
 SECRET_KEY: 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
 
-model: davinci
 num_generate: 1
 max_tokens: 512
 
 # Lists for loops
 models:
-  - bigscience/bloom:
-      - class: BLOOMPrompt
+#  - text-curie-001:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#  - text-davinci-003:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#  - davinci:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#  - text-davinci-002:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+  - facebook/opt-350m:
+      - class: OPTPrompt
       - prompt: prompt.txt
 
 temperatures:
+  - 0.3
   - 0.7
   - 1.0
+  - 1.3
+  - 1.7
+  - 2.0
