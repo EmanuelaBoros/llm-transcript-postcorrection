@@ -1,4 +1,4 @@
-Correct the spelling of the following text from on optical character recognition (OCR) applied to a historical document:
+Correct the spelling and grammar of the following incorrect text from on optical character recognition (OCR) applied to a historical document:
 
-Text: {{TEXT}}
-Corrected text:
+Incorrect text: {{TEXT}}
+The corrected text is:

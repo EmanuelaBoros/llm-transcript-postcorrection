@@ -108,6 +108,7 @@ def generate(
                                         data.update({"temperature": temperature})
 
                                         options = {
+                                            'engine': model_name,
                                             'temperature': temperature,
                                             'top_p': 1.0,
                                             'frequency_penalty': 0,
@@ -137,6 +138,7 @@ def generate(
                                     n = experiment_details["num_generate"]
                                     n_str = "samples" if n > 1 else "sample"
                                     options = {
+                                        'engine': model_name,
                                         'temperature': temperature,
                                         'top_p': 1.0,
                                         'frequency_penalty': 0,
