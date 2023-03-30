@@ -13,6 +13,8 @@ from dataset import NERDataset
 # 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
 from prompt import Prompt
 import importlib
+import jsonlines
+
 
 logger = logging.getLogger("gpt-experiments")
 logger.setLevel(logging.INFO)
@@ -77,46 +79,53 @@ def generate(
         "Authorization": f"Bearer {config['SECRET_KEY']}",
     }
 
+    with open(os.path.join(input_dir, 'test.txt'), 'r') as f:
+        sentences = f.readlines()
+
     for model in config['models']:
         # import pdb;pdb.set_trace()
         (model_name, model_class), = model.items()
         module_name = 'prompt'
         module = importlib.import_module(module_name)
         class_ = getattr(module, model_class)
-        instance = class_(model=model_name)
+        instance = class_(api_key=config['SECRET_KEY'], model=model_name)
+        logger.info('Experimenting with {}'.format(model_name))
+        output_file = os.path.join(output_dir, 'results_{}.jsonl'.format(model_name).replace('/', '_'))
+        with jsonlines.open(output_file, 'w') as f:
+            for sentence in sentences:
+                data = {
+                    "prompt": prompt.replace('{{TEXT}}', sentence),
+                    "max_tokens": config["max_tokens"],
+                }
+                logger.info('--Text: {}'.format(data['prompt']))
 
-    with open(os.path.join(input_dir, 'test.txt'), 'r') as f:
-        sentences = f.readlines()
+                loop = asyncio.get_event_loop()
 
-    # for sentence in sentences:
-    #     data = {
-    #         "prompt": prompt.replace('{{TEXT}}', sentence),
-    #         "max_tokens": config["max_tokens"],
-    #     }
-    #
-    #     loop = asyncio.get_event_loop()
-    #
-    #     for temp in config["temperatures"]:
-    #         data.update({"temperature": temp})
-    #
-    #         n = config["num_generate"] if temp != 0.0 else 1
-    #         n_str = "samples" if n > 1 else "sample"
-    #         output_file = f"output_{str(temp).replace('.', '_')}.{extension}"
-    #         logger.info(f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
-    #
-    #
-    #         gen_texts = []
-    #         for _ in trange(n):
-    #             gen_texts.append(gpt3_query(headers, data))
-    #             time.sleep(30)
-    #
-    #         with open(output_file, "w", encoding="utf-8") as f:
-    #             for gen_text in gen_texts:
-    #                 if gen_text:
-    #                     gen_text = prompt_md(prompt, gen_text) if markdown else gen_text
-    #                     f.write("{}\n{}\n".format(gen_text, sample_delim))
-    #
-    #     loop.close()
+                for temp in config["temperatures"]:
+                    data.update({"temperature": temp})
+
+                    n = config["num_generate"] if temp != 0.0 else 1
+                    n_str = "samples" if n > 1 else "sample"
+                    # output_file = f"output_{str(temp).replace('.', '_')}.{extension}"
+                    logger.info(f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
+
+                    generated_texts = []
+                    for _ in trange(n):
+
+                        result = instance.prediction(data['prompt'])
+                        data.update({"prediction": result})
+                        # gen_texts.append(gpt3_query(headers, data))
+                        # time.sleep(30)
+
+                    f.write(data)
+
+                    # with open(output_file, "w", encoding="utf-8") as f:
+                    #     for gen_text in generated_texts:
+                    #         if gen_text:
+                    #             gen_text = prompt_md(prompt, gen_text) if markdown else gen_text
+                    #             f.write("{}\n{}\n".format(gen_text, sample_delim))
+
+                loop.close()
 
 
 if __name__ == "__main__":
