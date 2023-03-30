@@ -19,6 +19,14 @@ Costs GPT can be seen at our [OpenAI group](https://platform.openai.com/account/
 
 ## Inference
 
+```python
+python main.py --input_dir ../data/datasets \
+               --output_dir ../data/outputs \
+               --config_file ../data/config.yml \
+               --prompt_dir ../data/prompts \
+               --device cpu
+```
+
 ### Prompts
 #### Zero-shot vs. 1-2-3 shot
 
