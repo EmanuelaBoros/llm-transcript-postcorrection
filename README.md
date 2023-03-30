@@ -3,6 +3,13 @@ A repository for prelimary work on HTR/OCR/ASR post-correction based on GPT mode
 
 
 ## Overview
+#### In general:
+_Are GPT (contemporary) language models fit for historical texts?_
+
+#### In particular:
+_Can GPT (contemporary) language models correct automatically transcribed text from cultural heritage collections?_
+
+The objective of this project is to test the capacity of GPT (and not only) language models to correct text.
 
 ## Setup
 
