@@ -25,16 +25,24 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-MODELS = ["gpt-4", "gpt-3.5-turbo", "text-davinci-003", "davinci", "bigscience/bloom-1b3"]
+MODELS = [
+    "gpt-4",
+    "gpt-3.5-turbo",
+    "text-davinci-003",
+    "davinci",
+    "bigscience/bloom-1b3"]
 # CHAT_MODELS = ["gpt-3.5-turbo"] # optimized for chat
 
 
 def gpt3_query(headers, data, model) -> str:
-    response = openai.Completion.create(model=model, prompt=data['prompt'],
-                                        temperature=data['temperature'],
-                                        max_tokens=data['max_tokens'], top_p=1.0,
-                                        frequency_penalty=0.0,
-                                        presence_penalty=0.0)
+    response = openai.Completion.create(
+        model=model,
+        prompt=data['prompt'],
+        temperature=data['temperature'],
+        max_tokens=data['max_tokens'],
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0)
     # import pdb;pdb.set_trace()
     return response["choices"][0]['text']
     # return r_json["choices"][0]["text"]
@@ -42,15 +50,15 @@ def gpt3_query(headers, data, model) -> str:
 
 def prompt_md(prompt: str, gen_text: str) -> str:
     lines = prompt.split("\n")
-    prompt_bold = "\n".join([f"**{line}**" if line != "" else line for line in lines])
+    prompt_bold = "\n".join(
+        [f"**{line}**" if line != "" else line for line in lines])
 
     return f"{prompt_bold}{gen_text}"
 
 
-
 def generate(
     input_dir, output_dir,
-    prompt: str = "../data/prompt.txt",
+    prompt_dir: str = "../data/prompts",
     config_file: str = "../data/config.yml",
     markdown: bool = True,
     query_async: bool = False,
@@ -61,36 +69,42 @@ def generate(
     with open(os.path.join(input_dir, config_file), "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
-    # If prompt is a file path, load the file as the prompt.
-    if os.path.exists(prompt):
-        logger.info(f"Loading prompt from {prompt}.")
-        with open(prompt, "r", encoding="utf-8") as f:
-            prompt = f.read()
-    else:
-        logger.info(f"GPT-3 Model Prompt: {prompt}.")
-
-    extension = "md" if markdown else "txt"
-    sample_delim = "\n---\n" if markdown else ("=" * 20)
+    # extension = "md" if markdown else "txt"
+    # sample_delim = "\n---\n" if markdown else ("=" * 20)
 
     openai.api_key = config['SECRET_KEY']
 
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {config['SECRET_KEY']}",
-    }
+    # headers = {
+    #     "Content-Type": "application/json",
+    #     "Authorization": f"Bearer {config['SECRET_KEY']}",
+    # }
 
     with open(os.path.join(input_dir, 'test.txt'), 'r') as f:
         sentences = f.readlines()
 
     for model in config['models']:
-        # import pdb;pdb.set_trace()
-        (model_name, model_class), = model.items()
-        module_name = 'prompt'
-        module = importlib.import_module(module_name)
+
+        (model_name, details), = model.items()
+
+        model_class = details['class']
+        prompt = os.path.join(prompt_dir, details['class'])
+        # If prompt is a file path, load the file as the prompt.
+        if os.path.exists(prompt):
+            logger.info(f"Loading prompt from {prompt}.")
+            with open(prompt, "r", encoding="utf-8") as f:
+                prompt = f.read()
+        else:
+            logger.info(f"Model Prompt: {prompt}.")
+
+        module = importlib.import_module('prompt')
         class_ = getattr(module, model_class)
         instance = class_(api_key=config['SECRET_KEY'], model=model_name)
         logger.info('Experimenting with {}'.format(model_name))
-        output_file = os.path.join(output_dir, 'results_{}.jsonl'.format(model_name).replace('/', '_'))
+        output_file = os.path.join(
+            output_dir,
+            'results_{}.jsonl'.format(model_name).replace(
+                '/',
+                '_'))
         with jsonlines.open(output_file, 'w') as f:
             for sentence in sentences:
                 data = {
@@ -107,23 +121,15 @@ def generate(
                     n = config["num_generate"] if temp != 0.0 else 1
                     n_str = "samples" if n > 1 else "sample"
                     # output_file = f"output_{str(temp).replace('.', '_')}.{extension}"
-                    logger.info(f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
+                    logger.info(
+                        f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
 
-                    generated_texts = []
                     for _ in trange(n):
 
                         result = instance.prediction(data['prompt'])
                         data.update({"prediction": result})
-                        # gen_texts.append(gpt3_query(headers, data))
-                        # time.sleep(30)
 
                     f.write(data)
-
-                    # with open(output_file, "w", encoding="utf-8") as f:
-                    #     for gen_text in generated_texts:
-                    #         if gen_text:
-                    #             gen_text = prompt_md(prompt, gen_text) if markdown else gen_text
-                    #             f.write("{}\n{}\n".format(gen_text, sample_delim))
 
                 loop.close()
 
@@ -135,25 +141,27 @@ if __name__ == "__main__":
     parser.add_argument(
         "--input_dir",
         type=str,
+        help="Base folder with input files.",
     )
     parser.add_argument(
         "--output_dir",
         type=str,
+        help="Base folder for prediction files.",
     )
-    # parser.add_argument(
-    #     "--base_wikidata",
-    #     type=str,
-    #     help="Base folder with Wikidata data.",
-    # )
-    # parser.add_argument(
-    #     "-d",
-    #     "--debug",
-    #     help="Print lots of debugging statements",
-    #     action="store_const",
-    #     dest="loglevel",
-    #     const=logging.DEBUG,
-    #     default=logging.WARNING,
-    # )
+    parser.add_argument(
+        "--prompt_dir",
+        type=str,
+        help="Base folder with prompts data.",
+    )
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Print lots of debugging statements",
+        action="store_const",
+        dest="loglevel",
+        const=logging.DEBUG,
+        default=logging.WARNING,
+    )
     parser.add_argument(
         "-v",
         "--verbose",
@@ -165,5 +173,3 @@ if __name__ == "__main__":
 
     args, _ = parser.parse_known_args()
     fire.Fire(generate)
-    # dataset = NERDataset(args.input_file)
-    # import pdb;pdb.set_trace()

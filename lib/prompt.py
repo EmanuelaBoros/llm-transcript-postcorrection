@@ -42,7 +42,7 @@ class OPTPrompt(Prompt):
     def __init__(self, api_key=None, model="facebook/opt-350m"):
 
         self.tokenizer = AutoTokenizer.from_pretrained(model)
-        self.model = OPTForCausalLM.from_pretrained(model)#.to('cuda')
+        self.model = OPTForCausalLM.from_pretrained(model)  # .to('cuda')
         self.options = {
             'engine': model,
             'temperature': 0.7,
@@ -51,6 +51,7 @@ class OPTPrompt(Prompt):
             'presence_penalty': 0,
             'max_tokens': 512
         }
+
     def prediction(self, prompt, options=None):
         if not options:
             options = self.options
@@ -135,7 +136,7 @@ class BLOOMPrompt(Prompt):
         self.tokenizer = BloomTokenizerFast.from_pretrained(model)
 
     def prediction(self, prompt, options=None):
-        import pdb;
+        import pdb
         pdb.set_trace()
 
         if not options:

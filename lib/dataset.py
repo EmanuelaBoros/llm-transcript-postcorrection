@@ -7,6 +7,7 @@ from datasets import Dataset
 Dataset classes for all text correction datasets
 """
 
+
 class OCRGTDataset(Dataset):
 
     def __init__(self, filename):
@@ -17,6 +18,7 @@ class OverproofDataset(Dataset):
 
     def __init__(self, filename):
         pass
+
 
 class ImpressoFrakturDataset(Dataset):
 
@@ -60,7 +62,6 @@ class AJMCDataset(Dataset):
         pass
 
 
-
 def _read_conll(path, encoding='utf-8', sep=None, indexes=None, dropna=True):
     r"""
     Construct a generator to read conll items.
@@ -86,14 +87,20 @@ def _read_conll(path, encoding='utf-8', sep=None, indexes=None, dropna=True):
     with open(path, 'r', encoding=encoding) as f:
 
         sample = []
-        start = next(f).strip() # Skip columns
+        start = next(f).strip()  # Skip columns
         start = next(f).strip()
 
         data = []
         for line_idx, line in enumerate(f, 0):
             line = line.strip()
 
-            if any(substring in line for substring in ['DOCSTART', '###', "# id", "# ", '###']):
+            if any(
+                substring in line for substring in [
+                    'DOCSTART',
+                    '###',
+                    "# id",
+                    "# ",
+                    '###']):
                 continue
 
             if line == '':
@@ -191,16 +198,18 @@ class OCRDataset(Dataset):
         if self.test_set:
             return {
                 'sequence': sequence,
-                'input_ids': torch.tensor(encoding['input_ids'], dtype=torch.long),
-                'attention_mask': torch.tensor(encoding['attention_mask'], dtype=torch.long)
-            }
+                'input_ids': torch.tensor(
+                    encoding['input_ids'],
+                    dtype=torch.long),
+                'attention_mask': torch.tensor(
+                    encoding['attention_mask'],
+                    dtype=torch.long)}
         else:
             return {
-                'sequence': sequence,
-                'input_ids': torch.tensor(encoding['input_ids'], dtype=torch.long),
-                'attention_mask': torch.tensor(encoding['attention_mask'], dtype=torch.long),
-                'target': torch.tensor(target, dtype=torch.long)
-            }
+                'sequence': sequence, 'input_ids': torch.tensor(
+                    encoding['input_ids'], dtype=torch.long), 'attention_mask': torch.tensor(
+                    encoding['attention_mask'], dtype=torch.long), 'target': torch.tensor(
+                    target, dtype=torch.long)}
 
     def get_info(self):
         return self.classes, self.encoded_classes, self.df.shape
@@ -217,8 +226,12 @@ class NERDataset(TorchDataset):
         columns = ["TOKEN", "NE-COARSE-LIT", "NE-COARSE-METO", "NE-FINE-LIT",
                    "NE-FINE-METO", "NE-FINE-COMP", "NE-NESTED",
                    "NEL-LIT", "NEL-METO", "MISC"]
-        self.phrases = _read_conll(filename, encoding='utf-8', sep='\t', indexes=indexes, dropna=True)
-
+        self.phrases = _read_conll(
+            filename,
+            encoding='utf-8',
+            sep='\t',
+            indexes=indexes,
+            dropna=True)
 
     def __len__(self):
         return len(self.phrases)
