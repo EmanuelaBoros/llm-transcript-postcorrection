@@ -58,26 +58,8 @@ class OPTPrompt(Prompt):
 
         inputs = self.tokenizer(prompt, return_tensors="pt")
 
-        # # Greedy Search
-        # results = self.tokenizer.decode(
-        #     self.model.generate(
-        #         inputs["input_ids"],
-        #         max_length=self.options['max_tokens'])[0])
-        #
-        # import pdb;
-        # pdb.set_trace()
-        #
-        # # Beam Search
-        # results = self.tokenizer.decode(
-        #     self.model.generate(
-        #         inputs["input_ids"],
-        #         max_length=self.options['max_tokens'],
-        #         num_beams=2,
-        #         no_repeat_ngram_size=2,
-        #         early_stopping=True)[0])
-
         # Sampling Top-k + Top-p
-        results = self.tokenizer.decode(
+        result = self.tokenizer.decode(
             self.model.generate(
                 inputs["input_ids"],
                 max_length=self.options['max_tokens'],
@@ -85,7 +67,11 @@ class OPTPrompt(Prompt):
                 top_k=50,
                 top_p=0.9)[0])
 
-        return results
+        # OPT adds the prompt in the response so we are removing it
+        last_comment_in_prompt = prompt.split('\n')[-1]
+        result = result[result.index(
+            last_comment_in_prompt) + len(last_comment_in_prompt) + 1:]
+        return result
 
 
 class FlanT5Prompt(Prompt):
