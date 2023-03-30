@@ -6,83 +6,79 @@ max_tokens: 512
 
 # Lists for loops
 models:
-  - gpt-3.5-turbo:
-      - class: GPTPrompt
-      - prompt: prompt.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - gpt-4-turbo:
-      - class: GPTPrompt
-      - prompt: prompt.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - text-curie-001:
-      - class: GPTPrompt
-      - prompt: prompt.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - text-davinci-003:
-      - class: GPTPrompt
-      - prompt: prompt.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - davinci:
-      - class: GPTPrompt
-      - prompt: prompt.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - text-davinci-002:
-      - class: GPTPrompt
-      - prompt: prompt.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - facebook/opt-350m:
-      - class: HFPrompt
-      - prompt: prompt.txt
-      - num_generate: 5 # OPT is very inconsistent
-  - google/flan-t5-base: # Tensorflow issue
+#  - gpt-3.5-turbo:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - gpt-4:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - text-curie-001:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - text-davinci-003:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - davinci:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - text-davinci-002:
+#      - class: GPTPrompt
+#      - prompt: prompt.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+  - facebook/opt-350m: # OPT is very inconsistent
       - class: HFPrompt
       - prompt: prompt.txt
       - num_generate: 1
@@ -94,6 +90,18 @@ models:
           - 1.5
           - 1.9
           - 2.0
+#  - google/flan-t5-base: # Tensorflow issue
+#      - class: HFPrompt
+#      - prompt: prompt.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
   - EleutherAI/gpt-neox-20b:
       - class: HFPrompt
       - prompt: prompt.txt
@@ -106,4 +114,29 @@ models:
           - 1.5
           - 1.9
           - 2.0
+  - bigscience/bloom:
+      - class: HFPrompt
+      - prompt: prompt.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
+          - 0.9
+          - 1.0
+          - 1.5
+          - 1.9
+          - 2.0
+  - cerebras/Cerebras-GPT-1.3B:
+      - class: HFPrompt
+      - prompt: prompt.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
+          - 0.9
+          - 1.0
+          - 1.5
+          - 1.9
+          - 2.0
+
 

@@ -39,10 +39,16 @@ class GPTPrompt(Prompt):
             result = openai.Completion.create(
                 prompt=prompt, **options)['choices'][0]['text']
         except:
-            result = openai.ChatCompletion.create(
-                **options,
-                messages=[{"role": "user", "content": prompt}]
-            )
+            # {
+            #     "model": "text-davinci-edit-001",
+            #     "input": "What day of the wek is it?",
+            #     "instruction": "Fix the spelling mistakes",
+            # }
+            options.update({'model': options['engine']}) # Chat endpoints do not have the same engine
+            options.pop('engine')
+            result = openai.ChatCompletion.create(**options,
+                                                  messages=[{"role": "user",
+                                                             "content": prompt}])['choices'][0]['message']['content']
 
         return result
 

@@ -51,6 +51,8 @@ def generate(
 
         (model_name, experiment_details), = model.items()
 
+        logger.info('Experimenting with {}'.format(model_name))
+
         experiment_details = get_dict(experiment_details)
 
         model_class = experiment_details['class']
@@ -67,7 +69,6 @@ def generate(
         module = importlib.import_module('prompt')
         class_ = getattr(module, model_class)
         instance = class_(api_key=config['SECRET_KEY'], model=model_name, device=device)
-        logger.info('Experimenting with {}'.format(model_name))
 
         # Iterate in the data folder with all datasets
         for root, dirs, files in os.walk(input_dir, topdown=False):
@@ -119,8 +120,8 @@ def generate(
                                         n = experiment_details["num_generate"] if temperature != 0.0 else 1
                                         n_str = "samples" if n > 1 else "sample"
 
-                                        logger.info(
-                                            f"Writing {n} {n_str} at temperature {temperature} to {output_file}.")
+                                        # logger.info(
+                                        #     f"Writing {n} {n_str} at temperature {temperature} to {output_file}.")
 
                                         for idx in trange(n):
 
@@ -145,8 +146,8 @@ def generate(
                                         'presence_penalty': 0,
                                         'max_tokens': 512
                                     }
-                                    logger.info(
-                                        f"Writing {n} {n_str} to {output_file}.")
+                                    # logger.info(
+                                    #     f"Writing {n} {n_str} to {output_file}.")
 
                                     for idx in trange(n):
                                         result = instance.prediction(
