@@ -26,8 +26,24 @@ models:
 #          - 1.3
 #          - 1.7
 #          - 2.0
-  - facebook/opt-350m:
-      - class: OPTPrompt
+#  - facebook/opt-350m:
+#      - class: OPTPrompt
+#      - prompt: prompt.txt
+#      - num_generate: 5 # OPT is very inconsistent
+#  - google/flan-t5-base: # Tensorflow issue
+#      - class: FlanT5Prompt
+#      - prompt: prompt.txt
+#      - num_generate: 5
+  - EleutherAI/gpt-neox-20b:
+      - class: GPTNeoxPrompt
       - prompt: prompt.txt
-      - num_generate: 5 # OPT is very inconsistent
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.3
+          - 0.7
+          - 1.0
+          - 1.3
+          - 1.7
+          - 2.0
 

@@ -8,7 +8,7 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 
 class Prompt:
 
-    def __call__(self, prompt, options=None):
+    def __call__(self, prompt, options=None, device='cpu'):
         return self.prediction(prompt, options)
 
     def prediction(self, prompt, options=None):
@@ -16,7 +16,7 @@ class Prompt:
 
 
 class GPTPrompt(Prompt):
-    def __init__(self, api_key=None, model='text-davinci-003'):
+    def __init__(self, api_key=None, model='text-davinci-003', device='cpu'):
         openai.api_key = api_key
 
         self.completion = openai.Completion
@@ -39,10 +39,10 @@ class GPTPrompt(Prompt):
 
 class OPTPrompt(Prompt):
 
-    def __init__(self, api_key=None, model="facebook/opt-350m"):
+    def __init__(self, api_key=None, model="facebook/opt-350m", device='cpu'):
 
         self.tokenizer = AutoTokenizer.from_pretrained(model)
-        self.model = OPTForCausalLM.from_pretrained(model)  # .to('cuda')
+        self.model = OPTForCausalLM.from_pretrained(model).to(device)
         self.options = {
             'engine': model,
             'temperature': 0.7,
@@ -76,29 +76,29 @@ class OPTPrompt(Prompt):
 
 class FlanT5Prompt(Prompt):
 
-    def __init__(self, api_key=None, model="google/flan-t5-xxl"):
+    def __init__(self, api_key=None, model="google/flan-t5-xxl", device='cpu'):
 
         self.tokenizer = T5Tokenizer.from_pretrained(model)
         self.model = T5ForConditionalGeneration.from_pretrained(
-            model, device_map="auto")
+            model, device_map="auto", from_tf=True).to(device)
+
+
 
     def prediction(self, prompt, options=None):
-        if not options:
-            options = self.options
 
         inputs = self.tokenizer(prompt, return_tensors="pt")
-
+        import pdb;pdb.set_trace()
         # Greedy Search
         results = self.tokenizer.decode(
             self.model.generate(
                 inputs["input_ids"],
-                max_length=self.options.max_tokens)[0])
+                max_length=options['max_tokens'])[0])
 
         # Beam Search
         results = self.tokenizer.decode(
             self.model.generate(
                 inputs["input_ids"],
-                max_length=self.options.max_tokens,
+                max_length=options['max_tokens'],
                 num_beams=2,
                 no_repeat_ngram_size=2,
                 early_stopping=True)[0])
@@ -107,7 +107,7 @@ class FlanT5Prompt(Prompt):
         results = self.tokenizer.decode(
             self.model.generate(
                 inputs["input_ids"],
-                max_length=self.options.max_tokens,
+                max_length=options['max_tokens'],
                 do_sample=True,
                 top_k=50,
                 top_p=0.9)[0])
@@ -117,8 +117,8 @@ class FlanT5Prompt(Prompt):
 
 class BLOOMPrompt(Prompt):
 
-    def __init__(self, api_key=None, model="bigscience/bloom-1b3"):
-        self.model = BloomForCausalLM.from_pretrained(model)
+    def __init__(self, api_key=None, model="bigscience/bloom-1b3", device='cpu'):
+        self.model = BloomForCausalLM.from_pretrained(model).to(device)
         self.tokenizer = BloomTokenizerFast.from_pretrained(model)
 
     def prediction(self, prompt, options=None):
@@ -159,9 +159,9 @@ class BLOOMPrompt(Prompt):
 
 class GPTNeoxPrompt(Prompt):
 
-    def __init__(self, api_key=None, model="EleutherAI/gpt-neox-20b"):
+    def __init__(self, api_key=None, model="EleutherAI/gpt-neox-20b", device='cpu'):
 
-        self.model = GPTNeoXForCausalLM.from_pretrained(model)
+        self.model = GPTNeoXForCausalLM.from_pretrained(model).to(device)
         self.tokenizer = GPTNeoXTokenizerFast.from_pretrained(model)
 
         # prompt = "GPTNeoX20B is a 20B-parameter autoregressive Transformer model developed by EleutherAI."
@@ -176,34 +176,36 @@ class GPTNeoxPrompt(Prompt):
         # )
         # gen_text = tokenizer.batch_decode(gen_tokens)[0]
 
-        def prediction(self, prompt, options=None):
-            if not options:
-                options = self.options
+    def prediction(self, prompt, options=None):
 
-            inputs = self.tokenizer(prompt, return_tensors="pt")
+        inputs = self.tokenizer(prompt, return_tensors="pt")
 
-            # Greedy Search
-            results = self.tokenizer.decode(
-                self.model.generate(
-                    inputs["input_ids"],
-                    max_length=self.options.max_tokens)[0])
+        # Greedy Search
+        import pdb;pdb.set_trace()
+        results = self.tokenizer.decode(
+            self.model.generate(
+                inputs["input_ids"],
+                temperature=0.9,
+                max_length=options['max_tokens'])[0])
 
-            # Beam Search
-            results = self.tokenizer.decode(
-                self.model.generate(
-                    inputs["input_ids"],
-                    max_length=self.options.max_tokens,
-                    num_beams=2,
-                    no_repeat_ngram_size=2,
-                    early_stopping=True)[0])
+        # Beam Search
+        results = self.tokenizer.decode(
+            self.model.generate(
+                inputs["input_ids"],
+                max_length=options['max_tokens'],
+                num_beams=2,
+                temperature=0.9,
+                no_repeat_ngram_size=2,
+                early_stopping=True)[0])
 
-            # Sampling Top-k + Top-p
-            results = self.tokenizer.decode(
-                self.model.generate(
-                    inputs["input_ids"],
-                    max_length=self.options.max_tokens,
-                    do_sample=True,
-                    top_k=50,
-                    top_p=0.9)[0])
+        # Sampling Top-k + Top-p
+        results = self.tokenizer.decode(
+            self.model.generate(
+                inputs["input_ids"],
+                max_length=options['max_tokens'],
+                do_sample=True,
+                temperature=0.9,
+                top_k=50,
+                top_p=0.9)[0])
 
-            return results
+        return results

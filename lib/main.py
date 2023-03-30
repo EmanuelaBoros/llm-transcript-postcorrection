@@ -15,7 +15,6 @@ from prompt import Prompt
 import importlib
 import jsonlines
 
-
 logger = logging.getLogger("gpt-experiments")
 logger.setLevel(logging.INFO)
 
@@ -24,28 +23,6 @@ logging.basicConfig(
     datefmt="%m/%d/%Y %H:%M:%S",
     level=logging.INFO,
 )
-
-MODELS = [
-    "gpt-4",
-    "gpt-3.5-turbo",
-    "text-davinci-003",
-    "davinci",
-    "bigscience/bloom-1b3"]
-# CHAT_MODELS = ["gpt-3.5-turbo"] # optimized for chat
-
-
-def gpt3_query(headers, data, model) -> str:
-    response = openai.Completion.create(
-        model=model,
-        prompt=data['prompt'],
-        temperature=data['temperature'],
-        max_tokens=data['max_tokens'],
-        top_p=1.0,
-        frequency_penalty=0.0,
-        presence_penalty=0.0)
-    # import pdb;pdb.set_trace()
-    return response["choices"][0]['text']
-    # return r_json["choices"][0]["text"]
 
 
 def get_dict(list_of_dicts: list):
@@ -60,8 +37,7 @@ def generate(
     output_dir: str = "../data/outputs",
     prompt_dir: str = "../data/prompts",
     config_file: str = "../data/config.yml",
-    markdown: bool = True,
-    query_async: bool = False,
+    device: str = 'cpu'
 ) -> None:
     """
     Generates texts via several models ni config and saves them to predictions files.
@@ -90,7 +66,7 @@ def generate(
 
         module = importlib.import_module('prompt')
         class_ = getattr(module, model_class)
-        instance = class_(api_key=config['SECRET_KEY'], model=model_name)
+        instance = class_(api_key=config['SECRET_KEY'], model=model_name, device=device)
         logger.info('Experimenting with {}'.format(model_name))
 
         # Iterate in the data folder with all datasets
@@ -126,25 +102,33 @@ def generate(
 
                                 if 'temperatures' in experiment_details:
                                     loop = asyncio.get_event_loop()
-                                    for temp in tqdm(
+                                    for temperature in tqdm(
                                         experiment_details["temperatures"], total=len(
                                             experiment_details["temperatures"])):
-                                        data.update({"temperature": temp})
+                                        data.update({"temperature": temperature})
 
-                                        n = experiment_details["num_generate"] if temp != 0.0 else 1
+                                        options = {
+                                            'temperature': temperature,
+                                            'top_p': 1.0,
+                                            'frequency_penalty': 0,
+                                            'presence_penalty': 0,
+                                            'max_tokens': 512
+                                        }
+
+                                        n = experiment_details["num_generate"] if temperature != 0.0 else 1
                                         n_str = "samples" if n > 1 else "sample"
 
                                         logger.info(
-                                            f"Writing {n} {n_str} at temperature {temp} to {output_file}.")
+                                            f"Writing {n} {n_str} at temperature {temperature} to {output_file}.")
 
                                         for idx in trange(n):
 
                                             result = instance.prediction(
-                                                data['prompt'])
+                                                data['prompt'], options)
                                             data.update({"prediction": result})
                                             data.update({"num_generate": idx})
 
-                                        f.write(data)
+                                            f.write(data)
 
                                     loop.close()
                                 else:
@@ -152,17 +136,23 @@ def generate(
                                     loop = asyncio.get_event_loop()
                                     n = experiment_details["num_generate"]
                                     n_str = "samples" if n > 1 else "sample"
-
+                                    options = {
+                                        'temperature': temperature,
+                                        'top_p': 1.0,
+                                        'frequency_penalty': 0,
+                                        'presence_penalty': 0,
+                                        'max_tokens': 512
+                                    }
                                     logger.info(
                                         f"Writing {n} {n_str} to {output_file}.")
 
                                     for idx in trange(n):
                                         result = instance.prediction(
-                                            data['prompt'])
+                                            data['prompt'], options)
                                         data.update({"prediction": result})
                                         data.update({"num_generate": idx})
 
-                                    f.write(data)
+                                        f.write(data)
                                     loop.close()
 
 
@@ -184,6 +174,12 @@ if __name__ == "__main__":
         "--prompt_dir",
         type=str,
         help="Base folder with prompts data.",
+    )
+    parser.add_argument(
+        "--device",
+        default='cpu',
+        type=str,
+        help="The inference is done either on cuda or cpu.",
     )
     parser.add_argument(
         "-d",
