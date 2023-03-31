@@ -68,9 +68,9 @@ def generate(
         else:
             logger.info(f"Model prompt missing: {prompt_path}.")
 
-        output_dir = os.path.join(output_dir, experiment_details['prompt'].replace('.txt', ''))
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        results_dir = os.path.join(output_dir, experiment_details['prompt'].replace('.txt', ''))
+        if not os.path.exists(results_dir):
+            os.makedirs(results_dir)
 
         module = importlib.import_module('prompt')
         class_ = getattr(module, model_class)
@@ -84,7 +84,7 @@ def generate(
                     dataset_name = root.split('/')[-1]
 
                     output_file = os.path.join(
-                        output_dir, 'results_{}_{}.jsonl'.format(
+                        results_dir, 'results_{}_{}.jsonl'.format(
                             dataset_name, model_name).replace(
                             '/', '-'))
 
