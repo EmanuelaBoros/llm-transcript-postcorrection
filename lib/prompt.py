@@ -55,6 +55,13 @@ class HFPrompt(Prompt):
     Prompting for HuggingFace models that can be loaded with AutoForCausalLM
     '''
     def __init__(self, api_key=None, model="bigscience/bloom", device='cpu'):
+
+        if 'llama' in model.lower():
+            from transformers import LlamaForCausalLM, LlamaTokenizer
+
+            self. tokenizer = LlamaTokenizer.from_pretrained(model)
+            self.model = LlamaForCausalLM.from_pretrained(model)
+
         self.model = AutoModelForCausalLM.from_pretrained(model).to(device)
         self.tokenizer = AutoTokenizer.from_pretrained(model)
 

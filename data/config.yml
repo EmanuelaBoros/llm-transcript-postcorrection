@@ -4,93 +4,9 @@ max_tokens: 512
 
 # Lists for loops
 models:
-  - gpt-3.5-turbo:
-      - class: GPTPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - gpt-4:
-      - class: GPTPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - text-curie-001:
-      - class: GPTPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - text-davinci-003:
-      - class: GPTPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - davinci:
-      - class: GPTPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - text-davinci-002:
-      - class: GPTPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - facebook/opt-350m: # OPT is very inconsistent
-      - class: HFPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-#  - google/flan-t5-base: # Tensorflow issue
-#      - class: HFPrompt
-#      - prompt: prompt_complex_01.txt
+#  - gpt-3.5-turbo:
+#      - class: GPTPrompt
+#      - prompt: prompt_basic_02.txt
 #      - num_generate: 1
 #      - temperatures:
 #          - 0.1
@@ -100,21 +16,9 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-  - EleutherAI/gpt-neox-20b:
-      - class: HFPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-#  - bigscience/bloom-7b1:
-#      - class: HFPrompt
-#      - prompt: prompt_complex_01.txt
+#  - gpt-4:
+#      - class: GPTPrompt
+#      - prompt: prompt_basic_02.txt
 #      - num_generate: 1
 #      - temperatures:
 #          - 0.1
@@ -124,9 +28,9 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-#  - dslack/glm-130b:
-#      - class: HFPrompt
-#      - prompt: prompt_complex_01.txt
+#  - text-curie-001:
+#      - class: GPTPrompt
+#      - prompt: prompt_basic_02.txt
 #      - num_generate: 1
 #      - temperatures:
 #          - 0.1
@@ -136,31 +40,127 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-  - cerebras/Cerebras-GPT-1.3B:
-      - class: HFPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - togethercomputer/GPT-NeoXT-Chat-Base-20B:
-      - class: HFPrompt
-      - prompt: prompt_basic_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - /scratch/eboros/data/LLaMA-7B:
+#  - text-davinci-003:
+#      - class: GPTPrompt
+#      - prompt: prompt_basic_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - davinci:
+#      - class: GPTPrompt
+#      - prompt: prompt_basic_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - text-davinci-002:
+#      - class: GPTPrompt
+#      - prompt: prompt_basic_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - facebook/opt-350m: # OPT is very inconsistent
+#      - class: HFPrompt
+#      - prompt: prompt_basic_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+##  - google/flan-t5-base: # Tensorflow issue
+##      - class: HFPrompt
+##      - prompt: prompt_complex_01.txt
+##      - num_generate: 1
+##      - temperatures:
+##          - 0.1
+##          - 0.5
+##          - 0.9
+##          - 1.0
+##          - 1.5
+##          - 1.9
+##          - 2.0
+#  - EleutherAI/gpt-neox-20b:
+#      - class: HFPrompt
+#      - prompt: prompt_basic_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+##  - bigscience/bloom-7b1:
+##      - class: HFPrompt
+##      - prompt: prompt_complex_01.txt
+##      - num_generate: 1
+##      - temperatures:
+##          - 0.1
+##          - 0.5
+##          - 0.9
+##          - 1.0
+##          - 1.5
+##          - 1.9
+##          - 2.0
+##  - dslack/glm-130b:
+##      - class: HFPrompt
+##      - prompt: prompt_complex_01.txt
+##      - num_generate: 1
+##      - temperatures:
+##          - 0.1
+##          - 0.5
+##          - 0.9
+##          - 1.0
+##          - 1.5
+##          - 1.9
+##          - 2.0
+#  - cerebras/Cerebras-GPT-1.3B:
+#      - class: HFPrompt
+#      - prompt: prompt_basic_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - togethercomputer/GPT-NeoXT-Chat-Base-20B:
+#      - class: HFPrompt
+#      - prompt: prompt_basic_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+  - decapoda-research/llama-7b-hf:
       - class: HFPrompt
       - prompt: prompt_basic_02.txt
       - num_generate: 1
