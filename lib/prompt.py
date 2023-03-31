@@ -1,9 +1,5 @@
 import openai
-from transformers import BloomForCausalLM, BloomTokenizerFast
-from transformers import AutoTokenizer, OPTForCausalLM
-import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from transformers import T5Tokenizer, T5ForConditionalGeneration
 
 
 class Prompt:
@@ -99,7 +95,8 @@ class HFPrompt(Prompt):
 
         # OPT adds the prompt in the response, so we are removing it
         last_comment_in_prompt = prompt.split('\n')[-1]
-        result = result[result.index(
-            last_comment_in_prompt) + len(last_comment_in_prompt) + 1:]
+        if last_comment_in_prompt in result:
+            result = result[result.index(
+                last_comment_in_prompt) + len(last_comment_in_prompt) + 1:]
 
         return result

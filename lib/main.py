@@ -47,6 +47,8 @@ def generate(
 
     openai.api_key = config['SECRET_KEY']
 
+
+
     for model in config['models']:
 
         (model_name, experiment_details), = model.items()
@@ -56,15 +58,19 @@ def generate(
         experiment_details = get_dict(experiment_details)
 
         model_class = experiment_details['class']
-        prompt = os.path.join(prompt_dir, experiment_details['prompt'])
+        prompt_path = os.path.join(prompt_dir, experiment_details['prompt'])
 
         # If prompt is a file path, load the file as the prompt.
-        if os.path.exists(prompt):
-            logger.info(f"Loading prompt from {prompt}.")
-            with open(prompt, "r", encoding="utf-8") as f:
+        if os.path.exists(prompt_path):
+            logger.info(f"Loading prompt from {prompt_path}.")
+            with open(prompt_path, "r", encoding="utf-8") as f:
                 prompt = f.read()
         else:
-            logger.info(f"Model Prompt: {prompt}.")
+            logger.info(f"Model prompt missing: {prompt_path}.")
+
+        output_dir = os.path.join(output_dir, experiment_details['prompt'].replace('.txt', ''))
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
         module = importlib.import_module('prompt')
         class_ = getattr(module, model_class)
@@ -76,6 +82,7 @@ def generate(
                 if 'jsonl' in name:
                     input_file = os.path.join(root, name)
                     dataset_name = root.split('/')[-1]
+
                     output_file = os.path.join(
                         output_dir, 'results_{}_{}.jsonl'.format(
                             dataset_name, model_name).replace(
