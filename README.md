@@ -11,7 +11,38 @@ _Can GPT (contemporary) language models correct automatically transcribed text f
 
 The objective of this project is to test the capacity of GPT (and not only) language models to correct text.
 
-## Setup
+## Organization
+
+`data/config.yml`- configuration file for all LLMs and theire specificities
+Example for GPT-4 and and example prompt `prompt_basic_01.txt`:
+```
+max_tokens: 512
+
+# Lists for loops
+models:
+  - gpt-4:
+      - class: GPTPrompt
+      - prompt: prompt_basic_01.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
+          - 0.9
+          - 1.0
+          - 1.5
+          - 1.9
+          - 2.0
+  ```
+
+`data/datasets`- folder with the datasets (for now, just a simulated datatset `test`)
+
+`data/prompts/`- folder with the prompts in format `txt`
+Example `prompt_basic_01.txt`:
+```
+Correct the text: {{TEXT}}
+```
+
+`data/outputs/`- folder with the results per prompt type
 
 ### Requirements
 `>= python 3.9`
