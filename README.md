@@ -52,6 +52,11 @@ Here is a from-scratch script.
 
 # install dependencies
 pip install -r lib/requirements.txt
+
+For LLama:
+Install 🤗 Transformers from source with the following command:
+
+pip install git+https://github.com/huggingface/transformers
 ```
 Costs GPT can be seen at our [OpenAI group](https://platform.openai.com/account/usage).
 
