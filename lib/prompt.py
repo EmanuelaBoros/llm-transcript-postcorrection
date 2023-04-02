@@ -61,9 +61,9 @@ class HFPrompt(Prompt):
 
             self. tokenizer = LlamaTokenizer.from_pretrained(model)
             self.model = LlamaForCausalLM.from_pretrained(model)
-
-        self.model = AutoModelForCausalLM.from_pretrained(model).to(device)
-        self.tokenizer = AutoTokenizer.from_pretrained(model)
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(model).to(device)
+            self.tokenizer = AutoTokenizer.from_pretrained(model)
 
     def prediction(self, prompt, options=None, search='topk'):
 
