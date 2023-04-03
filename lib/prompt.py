@@ -135,9 +135,19 @@ class HFPrompt(Prompt):
         else:
             # in case no specific request, apply the best one: top-k
             # Sampling Top-k + Top-p
+
+            # with torch.no_grad():
+            #     generation_output = model.generate(
+            #         input_ids=input_ids,
+            #         generation_config=generation_config,
+            #         return_dict_in_generate=True,
+            #         output_scores=True,
+            #         max_new_tokens=max_new_tokens,
+            #     )
+
             result = self.tokenizer.decode(
                 self.model.generate(
-                    inputs["input_ids"],
+                    input_ids=inputs["input_ids"],
                     max_length=options['max_tokens'],
                     do_sample=True,
                     temperature=options['temperature'],
