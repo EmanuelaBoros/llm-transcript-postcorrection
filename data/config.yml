@@ -172,7 +172,7 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-  - tloen/alpaca-lora-7b:
+  - tloen/alpaca-lora:
       - class: HFPrompt
       - prompt: prompt_basic_02.txt
       - num_generate: 1
