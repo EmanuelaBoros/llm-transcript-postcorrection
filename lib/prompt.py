@@ -66,7 +66,7 @@ class HFPrompt(Prompt):
         elif "alpaca" in model.lower():
             from peft import PeftModel
 
-            tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
+            self.tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
 
             BASE_MODEL = "decapoda-research/llama-7b-hf"
             LORA_WEIGHTS = "tloen/alpaca-lora-7b"
