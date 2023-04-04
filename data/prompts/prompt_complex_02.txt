@@ -1,0 +1,4 @@
+Correct the spelling and grammar of the following incorrect text from on optical character recognition (OCR) applied to a historical document. Please provide a corrected version of the following sentence and nothing else.
+
+Incorrect text: {{TEXT}}
+The corrected text is:
