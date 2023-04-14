@@ -5,22 +5,23 @@ on:
   pull_request:
   push:
     branches:
-    - master
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install git-lfs
-    - uses: actions/checkout@v2
-    - run: apt-get update && apt-get install git-lfs
-    
-    - name: Do autopep8
-    - uses: actions/checkout@v2
-      with:
-        # Make sure the actual branch is checked out when running on pull requests
-       ref: ${{ github.head_ref }}
-    - uses: creyD/autopep8_action@v3.0
-      env:
-       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install git-lfs
+        run: sudo apt-get update && sudo apt-get install git-lfs
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          # Make sure the actual branch is checked out when running on pull requests
+          ref: ${{ github.head_ref }}
+
+      - name: Do autopep8
+        uses: creyD/autopep8_action@v3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
