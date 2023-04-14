@@ -13,10 +13,11 @@ jobs:
 
     steps:
       - name: Install git-lfs
-        run: sudo apt-get update && sudo apt-get install git-lfs
-        
-      - name: Set up git-lfs
-        run: git lfs install
+        run:
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git-lfs install
+          git-lfs version
 
       - name: Checkout repository
         uses: actions/checkout@v2
