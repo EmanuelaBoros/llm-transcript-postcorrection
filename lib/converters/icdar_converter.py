@@ -27,6 +27,10 @@ def process_text(text):
     return sentences
 
 
+
+
+
+
 def custom_similarity(sentence1, sentence2):
     """
     :param sentence1:
@@ -42,12 +46,18 @@ def align_sentences(sentences1, sentences2):
     for sentence1 in sentences1:
         best_match = (None, 0)
         for sentence2 in sentences2:
+
+
+
             similarity = custom_similarity(sentence1, sentence2)
             if similarity > best_match[1]:
                 best_match = (sentence2, similarity)
         aligned_sentences.append((sentence1, best_match[0]))
 
     return aligned_sentences
+
+
+
 
 
 def process_file(input_file, output_file):
@@ -70,6 +80,9 @@ def process_file(input_file, output_file):
         for ocr_sentence, gs_sentence in aligned_sentences:
             json_line = json.dumps({"ocr_text": ocr_sentence, "correct_text": gs_sentence})
             outfile.write(json_line + "\n")
+
+
+
 
 
 if __name__ == "__main__":
