@@ -1,2 +1,21 @@
-- name: Autopep8 Action
-  uses: creyD/autopep8_action@v3.0
+# This action works with pull requests and pushes
+name: Autopep8 Integration
+
+on:
+  pull_request:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Make sure the actual branch is checked out when running on pull requests
+        ref: ${{ github.head_ref }}
+    - uses: creyD/autopep8_action@v3.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
