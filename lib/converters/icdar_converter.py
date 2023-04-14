@@ -82,9 +82,6 @@ def process_file(input_file, output_file):
             outfile.write(json_line + "\n")
 
 
-
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process text files and align sentences.")
     parser.add_argument("--input_dir", help="The path to the input directory containing the text files.")
