@@ -83,9 +83,11 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])
+    progress_bar = tqdm(total=total_files, desc="Processing files", unit="file")
 
     for root, dirs, files in os.walk(args.input_dir):
-        for file in tqdm(files, total=len(files)):
+        for file in files:
             if file.endswith(".txt") and 'readme' not in file:
                 input_file = os.path.join(root, file)
 
@@ -100,3 +102,5 @@ if __name__ == "__main__":
                     os.makedirs(output_dir_path)
 
                 process_file(input_file, output_file)
+                progress_bar.update(1)
+    progress_bar.close()
