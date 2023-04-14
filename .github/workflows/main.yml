@@ -12,12 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install git-lfs
+    - uses: actions/checkout@v2
+    - run: apt-get update && apt-get install git-lfs
     - uses: actions/checkout@v2
       with:
         # Make sure the actual branch is checked out when running on pull requests
-        ref: ${{ github.head_ref }}
-    - name: Install git-lfs
-    - run: apt-get update && apt-get install git-lfs
+       ref: ${{ github.head_ref }}
     - uses: creyD/autopep8_action@v3.0
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
