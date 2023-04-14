@@ -13,6 +13,10 @@ import logging
 
 
 def process_text(text):
+    """
+    :param text:
+    :return:
+    """
     # Remove any "#" characters and extra spaces
     cleaned_text = re.sub(r"#+", "", text).strip()
     cleaned_text = re.sub(r"@+", "", cleaned_text).strip()
@@ -22,7 +26,13 @@ def process_text(text):
 
     return sentences
 
+
 def custom_similarity(sentence1, sentence2):
+    """
+    :param sentence1:
+    :param sentence2:
+    :return:
+    """
     return textdistance.jaccard(sentence1, sentence2)
 
 
