@@ -14,6 +14,7 @@ import textdistance
 def process_text(text):
     # Remove any "#" characters and extra spaces
     cleaned_text = re.sub(r"#+", "", text).strip()
+    cleaned_text = re.sub(r"@+", "", cleaned_text).strip()
 
     # Split the text into sentences
     sentences = sent_tokenize(cleaned_text)
