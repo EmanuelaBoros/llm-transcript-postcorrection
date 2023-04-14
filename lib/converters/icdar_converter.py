@@ -9,6 +9,7 @@ from scipy.spatial.distance import euclidean
 from tqdm import tqdm
 from scipy.spatial.distance import cdist
 import textdistance
+import logging
 
 
 def process_text(text):
@@ -65,18 +66,34 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process text files and align sentences.")
     parser.add_argument("--input_dir", help="The path to the input directory containing the text files.")
     parser.add_argument("--output_dir", help="The path to the output directory where JSON Lines files will be created.")
-
+    parser.add_argument(
+        "--debug",
+        help="Print lots of debugging statements",
+        action="store_const",
+        dest="loglevel",
+        const=logging.DEBUG,
+        default=logging.WARNING,
+    )
+    parser.add_argument(
+        "--verbose",
+        help="Be verbose",
+        action="store_const",
+        dest="loglevel",
+        const=logging.INFO,
+    )
     args = parser.parse_args()
+
 
     for root, dirs, files in os.walk(args.input_dir):
         for file in tqdm(files, total=len(files)):
             if file.endswith(".txt") and 'readme' not in file:
                 input_file = os.path.join(root, file)
-                print('Analyzing file {}'.format(input_file))
+
+                logging.info('Analyzing file {}'.format(input_file))
                 # Compute the output file path by replacing the input directory with the output directory
                 output_file = os.path.join(args.output_dir,
                                            os.path.relpath(input_file, args.input_dir)).replace(".txt", ".jsonl")
-                print('Writing output {}'.format(output_file))
+                logging.info('Writing output {}'.format(output_file))
                 # Create the output directory if it does not exist
                 output_dir_path = os.path.dirname(output_file)
                 if not os.path.exists(output_dir_path):
