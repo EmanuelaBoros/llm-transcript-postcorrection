@@ -67,7 +67,6 @@ def process_file(input_file, output_file):
 
     # Extract OCR and GS sentences from the data list
     # [OCR_toInput] [OCR_aligned] [ GS_aligned]
-    # import pdb;pdb.set_trace()
     ocr_sentences = process_text(data[0].replace('[OCR_toInput]', '').strip())
     gs_sentences = process_text(data[2].replace('[ GS_aligned]', '').strip())
 
@@ -75,10 +74,6 @@ def process_file(input_file, output_file):
     aligned_sentences = align_sentences(ocr_sentences, gs_sentences)
 
     # Write the output to a JSON Lines file
-    # import pdb;pdb.set_trace()
-
-
-    
     with open(output_file, "w") as outfile:
         for ocr_sentence, gs_sentence in aligned_sentences:
             json_line = json.dumps({"ocr_text": ocr_sentence, "correct_text": gs_sentence})
