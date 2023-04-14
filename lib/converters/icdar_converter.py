@@ -74,6 +74,7 @@ def process_file(input_file, output_file):
     aligned_sentences = align_sentences(ocr_sentences, gs_sentences)
 
     # Write the output to a JSON Lines file
+
     
     with open(output_file, "w") as outfile:
         for ocr_sentence, gs_sentence in aligned_sentences:
