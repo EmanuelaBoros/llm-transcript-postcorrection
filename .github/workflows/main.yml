@@ -23,6 +23,7 @@ jobs:
         with:
           # Make sure the actual branch is checked out when running on pull requests
           ref: ${{ github.head_ref }}
+          lfs: true
 
       - name: Do autopep8
         uses: creyD/autopep8_action@v3.0
