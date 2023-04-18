@@ -1,9 +1,9 @@
 import os
 from bs4 import BeautifulSoup
 import argparse
+from typing import Tuple
 
-
-def extract_text_equiv(gt_path, pred_path):
+def extract_text_equiv(gt_path: str, pred_path: str, extraction_type: str) -> None:
     # Recursively search for XML files in the ground truth folder
     for root, dirs, files in os.walk(gt_path):
         for gt_file in files:
@@ -17,7 +17,7 @@ def extract_text_equiv(gt_path, pred_path):
                     gt_soup = BeautifulSoup(f, 'xml')
 
                 # Parse the prediction file
-                with open(pred_file.replace('.xml', '_p1_1.xml'), 'r') as f:
+                with open(pred_file, 'r') as f:
                     pred_soup = BeautifulSoup(f, 'xml')
 
                 # Iterate over each TextRegion in the ground truth file
@@ -34,27 +34,33 @@ def extract_text_equiv(gt_path, pred_path):
                     print(f'Ground truth TextRegion {region_id}:\n{gt_region_text}\n')
                     print(f'Prediction TextRegion {region_id}:\n{pred_region_text}\n')
 
-                    # Iterate over each TextLine in the TextRegion
-                    for gt_line in gt_region.find_all('TextLine'):
-                        # Find the corresponding TextLine in the prediction file
-                        line_id = gt_line['id']
-                        pred_line = pred_soup.find('TextLine', {'id': line_id})
+                    # If the extraction type is "line", iterate over each TextLine in the TextRegion
+                    if extraction_type == 'line':
+                        for gt_line in gt_region.find_all('TextLine'):
+                            # Find the corresponding TextLine in the prediction file
+                            line_id = gt_line['id']
+                            pred_line = pred_soup.find('TextLine', {'id': line_id})
 
-                        # Extract the TextEquiv content for the TextLine in the ground truth and prediction files
-                        gt_line_text = gt_line.find('TextEquiv').text
-                        pred_line_text = pred_line.find('TextEquiv').text
+                            # Extract the TextEquiv content for the TextLine in the ground truth and prediction files
+                            gt_line_text = gt_line.find('TextEquiv').text
+                            pred_line_text = pred_line.find('TextEquiv').text
 
-                        # Print the extracted TextEquiv content for the TextLine in the ground truth and prediction files
-                        print(f'Ground truth TextLine {line_id}:\n{gt_line_text}\n')
-                        print(f'Prediction TextLine {line_id}:\n{pred_line_text}\n')
+                            # Print the extracted TextEquiv content for the TextLine in the ground truth and prediction files
+                            print(f'Ground truth TextLine {line_id}:\n{gt_line_text}\n')
+                            print(f'Prediction TextLine {line_id}:\n{pred_line_text}\n')
 
+                    # If the extraction type is "region", skip the TextLine iteration
+                    elif extraction_type == 'region':
+                        pass
 
-if __name__ == '__main__':
+                    # Raise an error if the extraction type is invalid
+                    else:
+                        raise ValueError(f'Invalid extraction type "{extraction_type}"')
+
+def main() -> None:
     # Create an argument parser for the ground truth and prediction paths
     parser = argparse.ArgumentParser(description='Extract TextEquiv content for ground truth and prediction files.')
     parser.add_argument('gt_path', type=str, help='Path to ground truth folder')
     parser.add_argument('pred_path', type=str, help='Path to prediction folder')
-    args = parser.parse_args()
-
-    # Call the extract_text_equiv function with the provided paths
-    extract_text_equiv(args.gt_path, args.pred_path)
+    parser.add_argument('--extraction-type', type=str, default='region', choices=['region', 'line'],
+                        help='Specify whether to extract the TextEquiv content per region or per line')
