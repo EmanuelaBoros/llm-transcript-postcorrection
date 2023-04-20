@@ -1,88 +1,62 @@
 import os
 from bs4 import BeautifulSoup
 import argparse
-from typing import Tuple
-from nltk.tokenize import sent_tokenize, word_tokenize
 import textdistance
 import logging
 from tqdm import tqdm
 import json
+import pysbd
+from genalog.text import anchor
 
 
-def custom_similarity(sentence1, sentence2):
-    """
-    :param sentence1:
-    :param sentence2:
-    :return:
-    """
-    return textdistance.jaccard(sentence1, sentence2)
-
-
-def align_sentences(sentences1, sentences2):
-
-    aligned_sentences = []
-    for sentence1 in sentences1:
-        best_match = (None, 0)
-        for sentence2 in sentences2:
-            similarity = custom_similarity(sentence1, sentence2)
-            if similarity > best_match[1]:
-                print(similarity)
-                best_match = (sentence2, similarity)
-        aligned_sentences.append((sentence1, best_match[0]))
-
-    return aligned_sentences
-
-
-def process_text(text):
+def clean_text(text):
     cleaned_text = text.strip()
-    words = word_tokenize(cleaned_text)
-    return words
+    cleaned_text = cleaned_text.replace('@', '')
+    return cleaned_text
 
 
-def custom_similarity(word1, word2):
-    return textdistance.jaro_winkler(word1, word2)
+def align_texts(gt_text, ocr_text, language='en'):
+    segmenter = pysbd.Segmenter(language=language, clean=False)
 
+    # We align the texts with RETAS Method
+    aligned_gt, aligned_noise = anchor.align_w_anchor(gt_text, ocr_text)
+    # print(f"Original: {gt_text}")
+    # print(f"OCR: {ocr_text}")
+    # print(f"Aligned ground truth: {aligned_gt}")
+    # print(f"Aligned noise:        {aligned_noise}\n")
 
-def align_texts(text1, text2):
-    words1 = process_text(text1)
-    words2 = process_text(text2)
+    # We split the ground truth sentences and we consider them as the
+    # "correct" tokenization
+    gt_sentences = segmenter.segment(aligned_gt)
 
-    aligned_words = textdistance.dtw(
-        words1,
-        words2,
-        lambda w1,
-        w2: 1 -
-        custom_similarity(
-            w1,
-            w2))
+    # We split the noisy text following the sentences' lengths in the ground
+    # truth
+    sentence_lengths = [len(sentence) for sentence in gt_sentences]
+
+    ocr_sentences = []
+    start = 0
+
+    for length in sentence_lengths:
+        end = start + length
+        ocr_sentences.append(aligned_noise[start:end])
+        start = end
+
+    assert len(gt_sentences) == len(ocr_sentences)
 
     aligned_sentences = []
-    sentence1 = []
-    sentence2 = []
-
-    for word1, word2 in aligned_words.path:
-        if word1 is not None:
-            sentence1.append(words1[word1])
-        if word2 is not None:
-            sentence2.append(words2[word2])
-
-        if word1 is not None and word2 is not None and (
-                words1[word1] == '.' or words2[word2] == '.'):
-            aligned_sentences.append(
-                (' '.join(sentence1).strip(),
-                 ' '.join(sentence2).strip()))
-            sentence1 = []
-            sentence2 = []
-
-    if sentence1 or sentence2:
+    # Clean the sentences from the alignment characters @
+    for gt_sentence, ocr_sentence in zip(gt_sentences, ocr_sentences):
         aligned_sentences.append(
-            (' '.join(sentence1).strip(),
-             ' '.join(sentence2).strip()))
+            (clean_text(gt_sentence), clean_text(ocr_sentence)))
 
     return aligned_sentences
 
 
-def process_file(input_file, ocr_file, output_file, extraction_type):
+def process_file(
+        input_file: str,
+        ocr_file: str,
+        output_file: str,
+        extraction_type: str = 'region') -> None:
 
     # Parse the ground truth file
     with open(input_file, 'r') as f:
@@ -142,20 +116,17 @@ def process_file(input_file, ocr_file, output_file, extraction_type):
             elif extraction_type == 'region':
 
                 if ocr_region_text:
-                    # Align the OCR and GS sentences
+                    # Add the already aligned regions
                     aligned_texts += [(gt_region_text, ocr_region_text)]
 
                 # If the extraction type is "region", skip the TextLine
                 # iteration
             elif extraction_type == 'sentence':
 
-                gt_region_sentences = sent_tokenize(gt_region_text)
                 if ocr_region_text:
-                    pred_region_sentences = sent_tokenize(ocr_region_text)
-
                     # Align the OCR and GS sentences
                     aligned_texts += align_texts(gt_region_text,
-                                                 ocr_region_text)
+                                                 ocr_region_text, language=args.language)
 
             # Raise an error if the extraction type is invalid
             else:
@@ -191,6 +162,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_dir",
         help="The path to the output directory where JSON Lines files will be created.")
+    parser.add_argument(
+        "--language", default='de',
+        help="The language of the dataset.")
     parser.add_argument(
         "--debug",
         help="Print lots of debugging statements",
