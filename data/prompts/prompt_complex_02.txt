@@ -1,4 +1,3 @@
-Correct the spelling and grammar of the following incorrect text from on optical character recognition (OCR) applied to a historical document. Please provide a corrected version of the following sentence and nothing else.
-
-Incorrect text: {{TEXT}}
-The corrected text is:
+version https://git-lfs.github.com/spec/v1
+oid sha256:7ef73cae49df9dbe1c088deb8522b4b3006daecd945de62668e46638d813decc
+size 270
