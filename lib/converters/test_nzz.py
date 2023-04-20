@@ -5,9 +5,11 @@ import numpy as np
 from fastdtw import fastdtw
 from nltk.tokenize import word_tokenize
 
+
 def process_text(text):
     cleaned_text = text.strip()
     return cleaned_text
+
 
 def character_level_alignment(text1, text2):
     text1 = process_text(text1)
@@ -15,13 +17,15 @@ def character_level_alignment(text1, text2):
 
     # Perform the character-level alignment
     matcher = difflib.SequenceMatcher(None, text1, text2)
-    aligned_text = "".join([text1[i:i+n] for i, j, n in matcher.get_matching_blocks() if n > 0])
+    aligned_text = "".join([text1[i:i + n]
+                           for i, j, n in matcher.get_matching_blocks() if n > 0])
 
     # Tokenize the aligned text into sentences
     sentences1 = sent_tokenize(text1)
     sentences2 = sent_tokenize(aligned_text)
 
     return list(zip(sentences1, sentences2))
+
 
 def distance_matrix(words1, words2):
     n = len(words1)
@@ -33,6 +37,7 @@ def distance_matrix(words1, words2):
             dist_matrix[i, j] = Levenshtein.distance(words1[i], words2[j])
 
     return dist_matrix
+
 
 def word_level_alignment(text1, text2):
     text1 = process_text(text1)
@@ -52,6 +57,7 @@ def word_level_alignment(text1, text2):
         aligned_text2.append(words2[j])
 
     return " ".join(aligned_text1), " ".join(aligned_text2)
+
 
 text1 = "O R D Tyrawley, who lately ar r ived here, is exceedingly ... well received." \
         " He contejgtfaily with the MinnSrs, and, 'tis thought, will fpaediiy carry h.s Point."
