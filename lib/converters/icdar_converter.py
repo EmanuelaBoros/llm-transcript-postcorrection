@@ -103,7 +103,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--language", default='de',
         help="The language of the dataset.")
-    
     parser.add_argument(
         "--debug",
         help="Print lots of debugging statements",
