@@ -92,6 +92,18 @@ if __name__ == "__main__":
     parser.add_argument("--input_dir", help="The path to the input directory containing the text files.")
     parser.add_argument("--output_dir", help="The path to the output directory where JSON Lines files will be created.")
     parser.add_argument(
+        '--extraction_type',
+        type=str,
+        default='region',
+        choices=[
+            'region',
+            'line',
+            'sentence'],
+        help='Specify whether to extract the TextEquiv content per region or per line')
+    parser.add_argument(
+        "--language", default='de',
+        help="The language of the dataset.")
+    parser.add_argument(
         "--debug",
         help="Print lots of debugging statements",
         action="store_const",
