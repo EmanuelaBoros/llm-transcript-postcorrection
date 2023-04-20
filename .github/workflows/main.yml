@@ -1,0 +1,32 @@
+# This action works with pull requests and pushes
+name: Autopep8 Integration
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install git-lfs
+        run: |
+          sudo apt-get update
+          sudo apt-get install git-lfs
+          git-lfs install
+          git-lfs version
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          # Make sure the actual branch is checked out when running on pull requests
+          ref: ${{ github.head_ref }}
+          lfs: true
+
+      - name: Do autopep8
+        uses: creyD/autopep8_action@v3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
