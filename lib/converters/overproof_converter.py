@@ -9,6 +9,7 @@ import pysbd
 from genalog.text import anchor
 import re
 
+
 def clean_text(text):
     cleaned_text = text.strip()
     cleaned_text = cleaned_text.replace('@', '')
@@ -71,7 +72,8 @@ def process_file(
         lines = article.split('\n')
 
         aligned_article_lines = []
-        # Align the lines before all types of extraction so the region/article can be produced
+        # Align the lines before all types of extraction so the region/article
+        # can be produced
         for line in lines:
             if '||@@||' in line:
                 aligned_lines = line.split('||@@||')
@@ -84,18 +86,23 @@ def process_file(
 
         # The region in OVERPROOF is the article level
         elif extraction_type == 'region':
-            gt_region_text = ' '.join([gt_line for gt_line, _ in aligned_article_lines]).strip()
-            ocr_region_text = ' '.join([ocr_line for _, ocr_line in aligned_article_lines]).strip()
+            gt_region_text = ' '.join(
+                [gt_line for gt_line, _ in aligned_article_lines]).strip()
+            ocr_region_text = ' '.join(
+                [ocr_line for _, ocr_line in aligned_article_lines]).strip()
             aligned_texts.append((gt_region_text, ocr_region_text))
 
         elif extraction_type == 'sentence':
-            gt_region_text = ' '.join([gt_line for gt_line, _ in aligned_article_lines]).strip()
-            ocr_region_text = ' '.join([ocr_line for _, ocr_line in aligned_article_lines]).strip()
+            gt_region_text = ' '.join(
+                [gt_line for gt_line, _ in aligned_article_lines]).strip()
+            ocr_region_text = ' '.join(
+                [ocr_line for _, ocr_line in aligned_article_lines]).strip()
             aligned_texts += align_texts(gt_region_text,
                                          ocr_region_text, language=args.language)
 
         else:
-            raise ValueError("Invalid extraction_type. Choose between 'line', 'region', or 'sentence'.")
+            raise ValueError(
+                "Invalid extraction_type. Choose between 'line', 'region', or 'sentence'.")
 
     # Write the output to a JSON Lines file
     with open(output_file, "w") as outfile:
