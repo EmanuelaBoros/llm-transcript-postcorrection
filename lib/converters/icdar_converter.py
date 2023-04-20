@@ -8,6 +8,7 @@ import pysbd
 from genalog.text import anchor
 from langdetect import detect
 
+
 def process_text(text):
     """
     :param text:
@@ -19,6 +20,7 @@ def process_text(text):
 
     return cleaned_text
 
+
 def clean_text(text):
     cleaned_text = text.strip()
     cleaned_text = cleaned_text.replace('@', '')
@@ -26,7 +28,6 @@ def clean_text(text):
 
 
 def align_texts(gt_text, ocr_text, language='en'):
-
     gt_text = process_text(gt_text)
     ocr_text = process_text(ocr_text)
 
@@ -35,7 +36,7 @@ def align_texts(gt_text, ocr_text, language='en'):
     except:
         # Defaulting to en if a tokenizer is not available in a specific language
         segmenter = pysbd.Segmenter(language='en', clean=False)
-        
+
     # We align the texts with RETAS Method
     aligned_gt, aligned_noise = anchor.align_w_anchor(gt_text, ocr_text)
 
