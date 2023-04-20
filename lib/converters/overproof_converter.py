@@ -14,7 +14,7 @@ def clean_text(text):
 
 
 def align_texts(gt_text, ocr_text, language='en'):
-    segmenter = pysbd.Segmenter(language=language, clean=False)
+    segmenter = pysbd.Segmenter(language=language, article_id=None)
 
     # We align the texts with RETAS Method
     aligned_gt, aligned_noise = anchor.align_w_anchor(gt_text, ocr_text)
@@ -45,7 +45,7 @@ def align_texts(gt_text, ocr_text, language='en'):
     # Clean the sentences from the alignment characters @
     for gt_sentence, ocr_sentence in zip(gt_sentences, ocr_sentences):
         aligned_sentences.append(
-            (clean_text(gt_sentence), clean_text(ocr_sentence)))
+            (clean_text(gt_sentence), clean_text(ocr_sentence)), article_id)
 
     return aligned_sentences
 
@@ -68,15 +68,16 @@ def process_file(
             continue
         lines = article.split('\n')
 
+        # Keep the article id
+        article_id = lines[0].strip()
+
         aligned_article_lines = []
         # Align the lines before all types of extraction so the region/article
         # can be produced
         for line in lines:
             if '||@@||' in line:
-                aligned_lines = line.split('||@@||')
+                aligned_lines = line.split('||@@||') + [article_id]
                 aligned_article_lines.append(tuple(aligned_lines))
-
-        article_id = lines[0].strip()
 
         if extraction_type == 'line':
             aligned_texts += aligned_article_lines
@@ -87,7 +88,7 @@ def process_file(
                 [gt_line for gt_line, _ in aligned_article_lines]).strip()
             ocr_region_text = ' '.join(
                 [ocr_line for _, ocr_line in aligned_article_lines]).strip()
-            aligned_texts.append((gt_region_text, ocr_region_text))
+            aligned_texts.append((gt_region_text, ocr_region_text, article_id))
 
         elif extraction_type == 'sentence':
             gt_region_text = ' '.join(
@@ -95,7 +96,9 @@ def process_file(
             ocr_region_text = ' '.join(
                 [ocr_line for _, ocr_line in aligned_article_lines]).strip()
             aligned_texts += align_texts(gt_region_text,
-                                         ocr_region_text, language=args.language)
+                                         ocr_region_text,
+                                         language=args.language,
+                                         article_id=article_id)
 
         else:
             raise ValueError(
@@ -104,9 +107,9 @@ def process_file(
     # Write the output to a JSON Lines file
     with open(output_file, "w") as outfile:
         for text in aligned_texts:
-            ocr_text, gs_text = text[0], text[1]
+            ocr_text, gs_text, article_id = text[0], text[1], text[-1]
             json_line = json.dumps(
-                {"ocr_text": ocr_text, "correct_text": gs_text})
+                {"ocr_text": ocr_text, "correct_text": gs_text, 'article_id': article_id})
             outfile.write(json_line + "\n")
 
 
