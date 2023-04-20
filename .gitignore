@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 *.DS_Store
 
+# Excluding thr processed files
+*.jsonl
+
 */converted/*
 
 # C extensions
