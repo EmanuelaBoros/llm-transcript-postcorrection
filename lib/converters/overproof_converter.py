@@ -106,7 +106,8 @@ def process_file(
 
     # Write the output to a JSON Lines file
     with open(output_file, "w") as outfile:
-        for ocr_text, gs_text in aligned_texts:
+        for text in aligned_texts:
+            ocr_text, gs_text = text[0], text[1]
             json_line = json.dumps(
                 {"ocr_text": ocr_text, "correct_text": gs_text})
             outfile.write(json_line + "\n")
