@@ -1,13 +1,10 @@
 import os
-from bs4 import BeautifulSoup
 import argparse
-import textdistance
 import logging
 from tqdm import tqdm
 import json
 import pysbd
 from genalog.text import anchor
-import re
 
 
 def clean_text(text):
