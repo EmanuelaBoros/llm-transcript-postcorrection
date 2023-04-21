@@ -12,6 +12,10 @@ __pycache__/
 *.png
 *.wav
 *.jsonl
+*.png
+*.wav
+*.jsonl
+
 # C extensions
 *.so
 
