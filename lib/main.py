@@ -2,7 +2,6 @@ import os
 import openai
 import yaml
 import json
-import logging
 import os
 import asyncio
 import fire
@@ -14,6 +13,7 @@ from dataset import NERDataset
 from prompt import Prompt
 import importlib
 import jsonlines
+import logging
 
 logger = logging.getLogger("gpt-experiments")
 logger.setLevel(logging.INFO)
