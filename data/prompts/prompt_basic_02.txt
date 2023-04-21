@@ -1,3 +1,1 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c4b5b397f41d14a8ce41b9daf2f7adfdac4f4a7accf6b063a5c5a448aaa8cdfa
-size 64
+Correct the spelling and grammar of the following text: {{TEXT}}
