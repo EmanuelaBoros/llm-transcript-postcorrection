@@ -61,7 +61,8 @@ def process_file(args, input_file, output_file):
     # Write the output to a JSON Lines file
     with open(output_file, "a") as outfile:
         for ocr_sentence, gs_sentence in aligned_sentences:
-            json_line = json.dumps({Const.OCR: {Const.LINE: Const.NONE,
+            json_line = json.dumps({Const.FILE: input_file,
+                                    Const.OCR: {Const.LINE: Const.NONE,
                                                 Const.SENTENCE: ocr_sentence,
                                                 Const.REGION: Const.NONE}, # TODO removed temporarily the region - too large
                                     Const.GROUND: {Const.LINE: Const.NONE,
@@ -107,6 +108,10 @@ if __name__ == "__main__":
     output_dir_path = args.input_dir.replace('original', 'converted')
 
     output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+    if os.path.exists(output_file):
+        logging.info('{} already exists. It will be deleted.')
+        os.remove(output_file)
+
     logging.info('Writing output {}'.format(output_file))
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:

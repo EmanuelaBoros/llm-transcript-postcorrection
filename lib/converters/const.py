@@ -6,4 +6,5 @@ class Const:
     REGION = 'region'
     LINE = 'line'
     SENTENCE = 'sentence'
+    FILE = 'filename'
     NONE = None
