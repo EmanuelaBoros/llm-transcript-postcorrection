@@ -3,18 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.DS_Store
-# Excluding thr processed files
-*.jsonl
 
 */converted/*
 */original/*
 
 *.png
 *.wav
-#*.jsonl
-*.png
-*.wav
-*.jsonl
 
 # C extensions
 *.so
