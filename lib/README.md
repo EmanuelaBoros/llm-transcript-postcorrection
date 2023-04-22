@@ -3,7 +3,7 @@
 ## Converters
 
 The data format in `jsonl` is:
-```jsonl
+```
 {Const.OCR: {Const.LINE: the output of an OCR text of a line if exists otherwise None,
             Const.SENTENCE: the output of an OCR text of a sentence (that contains the line),
             Const.REGION: the output of an OCR of the full text},
