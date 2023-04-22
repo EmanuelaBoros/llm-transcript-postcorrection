@@ -8,6 +8,7 @@ from utils import process_text, align_texts
 from functools import lru_cache
 from const import Const
 import glob
+import pandas as pd
 
 # @lru_cache(maxsize=64)
 def load_metadada(args):
@@ -20,18 +21,33 @@ def load_metadada(args):
         raise FileNotFoundError('Metadata was not found.')
 
     with open(metadata_path, 'r') as f:
-        metadata = f.load()
+        metadata = f.readlines()
+
+    metadata = [line.strip().split(';') for line in metadata]
+    columns, metadata = metadata[0], metadata[1:] # Skip columns line: 'File;Date;Type;NbAlignedChar'
+
+    metadata = pd.DataFrame(metadata, columns=columns)
+    metadata['File'] = metadata['File'].apply(lambda x: x.replace('\\', '/')) # Replace Windows style file names
+
+    args.metadata = metadata
+    return metadata
 
 
 
-def lookup_metadata(metadata):
-    pass
+def lookup_metadata(args, input_file):
+
+    file_metadata = args.metadata[args.metadata.File == '/'.join(input_file.split('/')[-2:])]
+
+    return file_metadata.to_dict('records')[0]
 
 
 def process_file(args, input_file, output_file):
     # Read the input file
     with open(input_file, "r") as infile:
         data = infile.readlines()
+
+    file_metadata = lookup_metadata(args, input_file)
+
 
     # Extract OCR and GS sentences from the data list
     # [OCR_toInput] [OCR_aligned] [ GS_aligned]
@@ -45,9 +61,14 @@ def process_file(args, input_file, output_file):
     # Write the output to a JSON Lines file
     with open(output_file, "w") as outfile:
         for ocr_sentence, gs_sentence in aligned_sentences:
-            json_line = json.dumps({Const.OCR_TEXT: ocr_sentence,
-                                    Const.CORRECT_TEXT: gs_sentence,
-                                    Const.REGION: gt_text})
+            json_line = json.dumps({Const.OCR: {Const.LINE: Const.NONE,
+                                                Const.SENTENCE: ocr_sentence,
+                                                Const.REGION: ocr_text},
+                                    Const.GROUND: {Const.LINE: Const.NONE,
+                                                Const.SENTENCE: gs_sentence,
+                                                Const.REGION: ocr_text}
+                                    } | file_metadata)
+
             outfile.write(json_line + "\n")
 
 
@@ -55,15 +76,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process text files and align sentences.")
     parser.add_argument("--input_dir", help="The path to the input directory containing the text files.")
     parser.add_argument("--output_dir", help="The path to the output directory where JSON Lines files will be created.")
-    parser.add_argument(
-        '--extraction_type',
-        type=str,
-        default='region',
-        choices=[
-            'region',
-            'line',
-            'sentence'],
-        help='Specify whether to extract the TextEquiv content per region or per line')
     parser.add_argument(
         "--language", default='de',
         help="The language of the dataset.")
@@ -90,7 +102,7 @@ if __name__ == "__main__":
         desc="Processing files",
         unit="file")
 
-    # metadata = load_metadada(args)
+    metadata = load_metadada(args)
 
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
@@ -103,10 +115,6 @@ if __name__ == "__main__":
                 output_file = input_file.replace(
                     'original',
                     'converted').replace(
-                    file,
-                    os.path.join(
-                        args.extraction_type,
-                        file)).replace(
                     ".txt",
                     ".jsonl")
                 logging.info('Writing output {}'.format(output_file))
@@ -116,7 +124,6 @@ if __name__ == "__main__":
                 if not os.path.exists(output_dir_path):
                     os.makedirs(output_dir_path)
 
-                process_file(args=arg, input_file=input_file, output_file=output_file,
-                             extraction_type=args.extraction_type)
+                process_file(args=args, input_file=input_file, output_file=output_file)
                 progress_bar.update(1)
     progress_bar.close()
