@@ -59,14 +59,14 @@ def process_file(args, input_file, output_file):
     aligned_sentences = align_texts(gt_text, ocr_text, language=language)
 
     # Write the output to a JSON Lines file
-    with open(output_file, "w") as outfile:
+    with open(output_file, "a") as outfile:
         for ocr_sentence, gs_sentence in aligned_sentences:
             json_line = json.dumps({Const.OCR: {Const.LINE: Const.NONE,
                                                 Const.SENTENCE: ocr_sentence,
-                                                Const.REGION: ocr_text},
+                                                Const.REGION: Const.NONE}, # TODO removed temporarily the region - too large
                                     Const.GROUND: {Const.LINE: Const.NONE,
                                                 Const.SENTENCE: gs_sentence,
-                                                Const.REGION: ocr_text}
+                                                Const.REGION: Const.NONE} # TODO removed temporarily the region - too large
                                     } | file_metadata)
 
             outfile.write(json_line + "\n")
@@ -104,6 +104,10 @@ if __name__ == "__main__":
 
     metadata = load_metadada(args)
 
+    output_dir_path = args.input_dir.replace('original', 'converted')
+
+    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+    logging.info('Writing output {}'.format(output_file))
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
             if file.endswith(".txt") and 'readme' not in file:
@@ -112,17 +116,17 @@ if __name__ == "__main__":
                 logging.info('Analyzing file {}'.format(input_file))
                 # Compute the output file path by replacing the input directory
                 # with the output directory
-                output_file = input_file.replace(
-                    'original',
-                    'converted').replace(
-                    ".txt",
-                    ".jsonl")
-                logging.info('Writing output {}'.format(output_file))
-                # Create the output directory if it does not exist
-                output_dir_path = os.path.dirname(output_file)
+                # output_file = input_file.replace(
+                #     'original',
+                #     'converted').replace(
+                #     ".txt",
+                #     ".jsonl")
 
-                if not os.path.exists(output_dir_path):
-                    os.makedirs(output_dir_path)
+                # Create the output directory if it does not exist
+                # output_dir_path = os.path.dirname(output_file)
+                #
+                # if not os.path.exists(output_dir_path):
+                #     os.makedirs(output_dir_path)
 
                 process_file(args=args, input_file=input_file, output_file=output_file)
                 progress_bar.update(1)
