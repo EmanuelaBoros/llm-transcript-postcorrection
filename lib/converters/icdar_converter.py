@@ -1,73 +1,34 @@
 import os
 import json
-import re
 import argparse
 from tqdm import tqdm
 import logging
-import pysbd
-from genalog.text import anchor
 from langdetect import detect
+from utils import process_text, align_texts
+from functools import lru_cache
+from const import Const
+import glob
+
+# @lru_cache(maxsize=64)
+def load_metadada(args):
+    metadata_path = None
+    for path in glob.glob(args.input_dir + '/**/*', recursive=True):
+        if 'eval_metadata' in path:
+            metadata_path = path
+
+    if metadata_path is None:
+        raise FileNotFoundError('Metadata was not found.')
+
+    with open(metadata_path, 'r') as f:
+        metadata = f.load()
 
 
-def process_text(text):
-    """
-    :param text:
-    :return:
-    """
-    # Remove any "#" characters and extra spaces
-    cleaned_text = re.sub(r"#+", "", text).strip()
-    cleaned_text = re.sub(r"@+", "", cleaned_text).strip()
 
-    return cleaned_text
+def lookup_metadata(metadata):
+    pass
 
 
-def clean_text(text):
-    cleaned_text = text.strip()
-    cleaned_text = cleaned_text.replace('@', '')
-    return cleaned_text
-
-
-def align_texts(gt_text, ocr_text, language='en'):
-    gt_text = process_text(gt_text)
-    ocr_text = process_text(ocr_text)
-
-    try:
-        segmenter = pysbd.Segmenter(language=language, clean=False)
-    except:
-        # Defaulting to en if a tokenizer is not available in a specific language
-        segmenter = pysbd.Segmenter(language='en', clean=False)
-
-    # We align the texts with RETAS Method
-    aligned_gt, aligned_noise = anchor.align_w_anchor(gt_text, ocr_text)
-
-    # We split the ground truth sentences and we consider them as the
-    # "correct" tokenization
-    gt_sentences = segmenter.segment(aligned_gt)
-
-    # We split the noisy text following the sentences' lengths in the ground
-    # truth
-    sentence_lengths = [len(sentence) for sentence in gt_sentences]
-
-    ocr_sentences = []
-    start = 0
-
-    for length in sentence_lengths:
-        end = start + length
-        ocr_sentences.append(aligned_noise[start:end])
-        start = end
-
-    assert len(gt_sentences) == len(ocr_sentences)
-
-    aligned_sentences = []
-    # Clean the sentences from the alignment characters @
-    for gt_sentence, ocr_sentence in zip(gt_sentences, ocr_sentences):
-        aligned_sentences.append(
-            (clean_text(gt_sentence), clean_text(ocr_sentence)))
-
-    return aligned_sentences
-
-
-def process_file(input_file, output_file):
+def process_file(args, input_file, output_file):
     # Read the input file
     with open(input_file, "r") as infile:
         data = infile.readlines()
@@ -84,7 +45,9 @@ def process_file(input_file, output_file):
     # Write the output to a JSON Lines file
     with open(output_file, "w") as outfile:
         for ocr_sentence, gs_sentence in aligned_sentences:
-            json_line = json.dumps({"ocr_text": ocr_sentence, "correct_text": gs_sentence})
+            json_line = json.dumps({Const.OCR_TEXT: ocr_sentence,
+                                    Const.CORRECT_TEXT: gs_sentence,
+                                    Const.REGION: gt_text})
             outfile.write(json_line + "\n")
 
 
@@ -127,6 +90,8 @@ if __name__ == "__main__":
         desc="Processing files",
         unit="file")
 
+    # metadata = load_metadada(args)
+
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
             if file.endswith(".txt") and 'readme' not in file:
@@ -151,7 +116,7 @@ if __name__ == "__main__":
                 if not os.path.exists(output_dir_path):
                     os.makedirs(output_dir_path)
 
-                process_file(input_file, output_file,
+                process_file(args=arg, input_file=input_file, output_file=output_file,
                              extraction_type=args.extraction_type)
                 progress_bar.update(1)
     progress_bar.close()
