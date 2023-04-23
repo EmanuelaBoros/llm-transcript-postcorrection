@@ -15,7 +15,7 @@ def remove_tags(text):
 
 
 def repair_punctuation(text):
-    cleaned_text = re.sub(r'\s+([,.:;])', r'\1', text)
+    cleaned_text = re.sub(r'\s+([,.:;?!])', r'\1', text)
     return cleaned_text
 
 

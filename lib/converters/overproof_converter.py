@@ -3,57 +3,16 @@ import argparse
 import logging
 from tqdm import tqdm
 import json
-import pysbd
-from genalog.text import anchor
+from langdetect import detect
+import re
+from const import Const
+from utils import clean_text, align_texts, reconstruct_sentences
 
 
-def clean_text(text):
-    cleaned_text = text.strip()
-    cleaned_text = cleaned_text.replace('@', '')
-    return cleaned_text
-
-
-def align_texts(gt_text, ocr_text, language='en'):
-    segmenter = pysbd.Segmenter(language=language, article_id=None)
-
-    # We align the texts with RETAS Method
-    aligned_gt, aligned_noise = anchor.align_w_anchor(gt_text, ocr_text)
-    # print(f"Original: {gt_text}")
-    # print(f"OCR: {ocr_text}")
-    # print(f"Aligned ground truth: {aligned_gt}")
-    # print(f"Aligned noise:        {aligned_noise}\n")
-
-    # We split the ground truth sentences and we consider them as the
-    # "correct" tokenization
-    gt_sentences = segmenter.segment(aligned_gt)
-
-    # We split the noisy text following the sentences' lengths in the ground
-    # truth
-    sentence_lengths = [len(sentence) for sentence in gt_sentences]
-
-    ocr_sentences = []
-    start = 0
-
-    for length in sentence_lengths:
-        end = start + length
-        ocr_sentences.append(aligned_noise[start:end])
-        start = end
-
-    assert len(gt_sentences) == len(ocr_sentences)
-
-    aligned_sentences = []
-    # Clean the sentences from the alignment characters @
-    for gt_sentence, ocr_sentence in zip(gt_sentences, ocr_sentences):
-        aligned_sentences.append(
-            (clean_text(gt_sentence), clean_text(ocr_sentence)), article_id)
-
-    return aligned_sentences
-
-
-def process_file(
-        input_file: str,
-        output_file: str,
-        extraction_type: str = 'region') -> None:
+def process_file(args,
+                 input_file: str,
+                 output_file: str,
+                 extraction_type: str = 'region') -> None:
 
     # Parse the ground truth file
     with open(input_file, 'r') as f:
@@ -63,6 +22,8 @@ def process_file(
 
     aligned_texts = []
 
+    language = detect(text)
+
     for article in articles:
         if not article.strip():
             continue
@@ -71,46 +32,58 @@ def process_file(
         # Keep the article id
         article_id = lines[0].strip()
 
-        aligned_article_lines = []
         # Align the lines before all types of extraction so the region/article
         # can be produced
+        aligned_lines = []
         for line in lines:
+            line = line.strip()
             if '||@@||' in line:
-                aligned_lines = line.split('||@@||') + [article_id]
-                aligned_article_lines.append(tuple(aligned_lines))
+                aligned_lines.append(tuple(line.split('||@@||')))
 
-        if extraction_type == 'line':
-            aligned_texts += aligned_article_lines
-
+        # import pdb;pdb.set_trace()
         # The region in OVERPROOF is the article level
-        elif extraction_type == 'region':
-            gt_region_text = ' '.join(
-                [gt_line for gt_line, _ in aligned_article_lines]).strip()
-            ocr_region_text = ' '.join(
-                [ocr_line for _, ocr_line in aligned_article_lines]).strip()
-            aligned_texts.append((gt_region_text, ocr_region_text, article_id))
+        gt_region_text = ' '.join(
+            [gt_line for gt_line, _ in aligned_lines]).strip()
+        ocr_region_text = ' '.join(
+            [ocr_line for _, ocr_line in aligned_lines]).strip()
+        aligned_texts.append((gt_region_text, ocr_region_text, article_id))
 
-        elif extraction_type == 'sentence':
-            gt_region_text = ' '.join(
-                [gt_line for gt_line, _ in aligned_article_lines]).strip()
-            ocr_region_text = ' '.join(
-                [ocr_line for _, ocr_line in aligned_article_lines]).strip()
-            aligned_texts += align_texts(gt_region_text,
-                                         ocr_region_text,
-                                         language=args.language,
-                                         article_id=article_id)
+        # Split in sentences and align
+        aligned_sentences = align_texts(gt_region_text,
+                                        ocr_region_text,
+                                        language=language)
 
-        else:
-            raise ValueError(
-                "Invalid extraction_type. Choose between 'line', 'region', or 'sentence'.")
+        gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines],
+                                                           [gt_sentence for gt_sentence, _ in aligned_sentences])
+        ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines],
+                                                            [ocr_sentence for _, ocr_sentence in aligned_sentences])
 
-    # Write the output to a JSON Lines file
-    with open(output_file, "w") as outfile:
-        for text in aligned_texts:
-            ocr_text, gs_text, article_id = text[0], text[1], text[-1]
-            json_line = json.dumps(
-                {"ocr_text": ocr_text, "correct_text": gs_text, 'article_id': article_id})
-            outfile.write(json_line + "\n")
+        try:
+            assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
+        except BaseException:
+            import pdb
+            pdb.set_trace()
+
+        # Append the output to a JSON Lines file
+        with open(output_file, "a") as outfile:
+            for gt_reconstructed_sentence, gt_line, ocr_reconstructed_sentence, ocr_line in zip(
+                gt_reconstructed_sentences, [gt_line for gt_line, _ in aligned_lines], ocr_reconstructed_sentences,
+                    [ocr_line for _, ocr_line in aligned_lines]):
+
+                json_line = json.dumps({Const.FILE: input_file,
+                                        Const.OCR: {Const.LINE: clean_text(ocr_line),
+                                                    Const.SENTENCE: clean_text(ocr_reconstructed_sentence),
+                                                    Const.REGION: clean_text(ocr_region_text)},
+                                        # TODO removed temporarily the region - too
+                                        # large
+                                        Const.GROUND: {Const.LINE: clean_text(gt_line),
+                                                       Const.SENTENCE: clean_text(gt_reconstructed_sentence),
+                                                       Const.REGION: clean_text(gt_region_text)}
+                                        # TODO removed temporarily the region - too
+                                        # large
+                                        } | {'article_id': article_id})
+                outfile.write(json_line + "\n")
+                outfile.flush()
 
 
 if __name__ == "__main__":
@@ -122,20 +95,8 @@ if __name__ == "__main__":
         type=str,
         help='Path to ground truth folder')
     parser.add_argument(
-        '--extraction_type',
-        type=str,
-        default='region',
-        choices=[
-            'region',
-            'line',
-            'sentence'],
-        help='Specify whether to extract the TextEquiv content per region or per line')
-    parser.add_argument(
         "--output_dir",
         help="The path to the output directory where JSON Lines files will be created.")
-    parser.add_argument(
-        "--language", default='de',
-        help="The language of the dataset.")
     parser.add_argument(
         "--debug",
         help="Print lots of debugging statements",
