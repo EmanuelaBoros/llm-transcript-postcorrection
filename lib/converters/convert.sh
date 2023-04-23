@@ -1,16 +1,13 @@
 #!/bin/bash
 
 # Check if DATA_PATH and OUTPUT_DIR arguments are provided
-if [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Usage: ./run_all_models.sh /path/to/your/data /path/to/output"
+if [ -z "$1" ]; then
+    echo "Usage: ./convert.sh /path/to/your/data"
     exit 1
 fi
 
 # Assign DATA_PATH from the first argument
 DATA_PATH="$1"
-
-# Assign OUTPUT_DIR from the second argument
-OUTPUT_DIR="$2"
 
 # Predefined list of dataset subfolders with their corresponding dataset names
 datasets="ocr:icdar-2017,icdar-2019,impresso-nzz asr:quaero-broadcast"
@@ -45,7 +42,7 @@ for subfolder_datasets in $datasets; do
 
                 if [[ "$dataset" == "$dataset_name" ]]; then
                     echo "Converting dataset: $dataset (Pseudo name: $pseudo_name)"
-                    python3 "${pseudo_name}_converter.py" --input_dir "$input_dir" --output_dir "$OUTPUT_DIR/$dataset"
+                    python "${pseudo_name}_converter.py" --input_dir "$input_dir" --output_dir "$DATA_PATH/$subfolder/converted/$dataset"
                     break
                 fi
             done

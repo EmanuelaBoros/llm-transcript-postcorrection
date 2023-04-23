@@ -30,3 +30,10 @@ impresso-nzz has the XLM files in the groundtruth folder and the OCRed text by i
 python nzz_converter.py --input_dir ../../data/datasets/ocr/original/icdar-2017/ \
                           --output_dir ../../data/datasets/ocr/converted
 ```
+
+
+For running all converters:
+`./convert.sh /path/to/your/data`
+
+Example:
+`./convert.sh ../../data/datasets`
