@@ -26,8 +26,9 @@ def align_texts(gt_text, ocr_text, language='en'):
 
     try:
         segmenter = pysbd.Segmenter(language=language, clean=False)
-    except:
-        # Defaulting to en if a tokenizer is not available in a specific language
+    except BaseException:
+        # Defaulting to en if a tokenizer is not available in a specific
+        # language
         segmenter = pysbd.Segmenter(language='en', clean=False)
 
     # We align the texts with RETAS Method
@@ -72,7 +73,8 @@ def reconstruct_sentences(txt_lines, sentences):
         if current_sentence in sentences:
             reconstructed_sentences.append(current_sentence)
             current_sentence = ""
-        # If it's the last text line and we haven't found the sentence yet, append it to the list
+        # If it's the last text line and we haven't found the sentence yet,
+        # append it to the list
         elif i == len(txt_lines) - 1:
             reconstructed_sentences.append(current_sentence)
 

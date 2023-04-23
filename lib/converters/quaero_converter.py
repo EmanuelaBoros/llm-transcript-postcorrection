@@ -8,20 +8,24 @@ import re
 from const import Const
 from utils import clean_text, align_texts, reconstruct_sentences
 
+
 def remove_tags(text):
     text = re.sub(r'<[^>]+>', '', text)
     return text
 
-def lookup_metadata(text):
-    pass
+
+def repair_punctuation(text):
+    cleaned_text = re.sub(r'\s+([,.:;])', r'\1', text)
+    return cleaned_text
+
+
 def process_file(args,
-        input_file: str,
-        output_file: str) -> None:
+                 input_file: str,
+                 output_file: str) -> None:
 
     # Parse the ground truth file
     with open(input_file, 'r', encoding='utf-8', errors='replace') as f:
         text = f.read()
-
 
     # Remove the NE tags
     text = remove_tags(text)
@@ -44,15 +48,16 @@ def process_file(args,
     aligned_sentences = align_texts(gt_region_text, ocr_region_text,
                                     language=language)
 
-    gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines],
-                                                       [gt_sentence for gt_sentence, _ in aligned_sentences])
-    ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines],
-                                                        [ocr_sentence for _, ocr_sentence in aligned_sentences])
+    gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines], [
+                                                       gt_sentence for gt_sentence, _ in aligned_sentences])
+    ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines], [
+                                                        ocr_sentence for _, ocr_sentence in aligned_sentences])
 
     try:
-        assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
-    except:
-        import pdb;
+        assert len(gt_reconstructed_sentences) == len(
+            ocr_reconstructed_sentences)
+    except BaseException:
+        import pdb
         pdb.set_trace()
     # Create the mapping list
 
@@ -65,11 +70,13 @@ def process_file(args,
                                     Const.OCR: {Const.LINE: clean_text(ocr_line),
                                                 Const.SENTENCE: clean_text(ocr_reconstructed_sentence),
                                                 Const.REGION: clean_text(ocr_region_text)},
-                                    # TODO removed temporarily the region - too large
-                                    Const.GROUND: {Const.LINE: clean_text(gt_line),
-                                                   Const.SENTENCE: clean_text(gt_reconstructed_sentence),
-                                                   Const.REGION: clean_text(gt_region_text)}
-                                    # TODO removed temporarily the region - too large
+                                    # TODO removed temporarily the region - too
+                                    # large
+                                    Const.GROUND: {Const.LINE: repair_punctuation(clean_text(gt_line)),
+                                                   Const.SENTENCE: repair_punctuation(clean_text(gt_reconstructed_sentence)),
+                                                   Const.REGION: repair_punctuation(clean_text(gt_region_text))}
+                                    # TODO removed temporarily the region - too
+                                    # large
                                     })
             outfile.write(json_line + "\n")
             outfile.flush()
@@ -112,7 +119,8 @@ if __name__ == "__main__":
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+    output_file = os.path.join(args.output_dir,
+                               '{}.jsonl'.format(args.input_dir.split('/')[-1]))
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
@@ -125,6 +133,9 @@ if __name__ == "__main__":
 
                 logging.info('Analyzing file {}'.format(input_file))
 
-                process_file(args=args, input_file=input_file, output_file=output_file)
+                process_file(
+                    args=args,
+                    input_file=input_file,
+                    output_file=output_file)
                 progress_bar.update(1)
     progress_bar.close()

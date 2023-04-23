@@ -161,7 +161,8 @@ if __name__ == "__main__":
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+    output_file = os.path.join(args.output_dir,
+                               '{}.jsonl'.format(args.input_dir.split('/')[-1]))
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
@@ -174,6 +175,9 @@ if __name__ == "__main__":
 
                 logging.info('Analyzing file {}'.format(input_file))
 
-                process_file(args=args, input_file=input_file, output_file=output_file)
+                process_file(
+                    args=args,
+                    input_file=input_file,
+                    output_file=output_file)
                 progress_bar.update(1)
     progress_bar.close()

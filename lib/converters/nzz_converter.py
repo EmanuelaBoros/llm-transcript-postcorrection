@@ -7,11 +7,12 @@ import json
 from const import Const
 from utils import clean_text, align_texts, reconstruct_sentences
 
+
 def process_file(args,
-        input_file: str,
-        ocr_file: str,
-        output_file: str,
-        extraction_type: str = 'region') -> None:
+                 input_file: str,
+                 ocr_file: str,
+                 output_file: str,
+                 extraction_type: str = 'region') -> None:
 
     # Parse the ground truth file
     with open(input_file, 'r') as f:
@@ -33,7 +34,8 @@ def process_file(args,
 
             # Extract the TextEquiv content for the TextRegion in the ground
             # truth and prediction files
-            gt_region_text = clean_text(gt_region.findAll('TextEquiv')[-1].text.strip())
+            gt_region_text = clean_text(
+                gt_region.findAll('TextEquiv')[-1].text.strip())
 
             ocr_region_text = None
             try:
@@ -54,7 +56,8 @@ def process_file(args,
 
                     # Extract the TextEquiv content for the TextLine in the
                     # ground truth and prediction files
-                    gt_line_text = clean_text(gt_line.find('TextEquiv').text.strip())
+                    gt_line_text = clean_text(
+                        gt_line.find('TextEquiv').text.strip())
 
                     ocr_line_text = None
                     try:
@@ -62,7 +65,8 @@ def process_file(args,
                             'TextEquiv')[-1].text.strip())
                         # ocr_line_text = ocr_line.find('TextEquiv').text.strip()
                     except BaseException as ex:
-                        print(f'Line {line_id} not found in {ocr_file} in region {region_id}. Exception: {ex}')
+                        print(
+                            f'Line {line_id} not found in {ocr_file} in region {region_id}. Exception: {ex}')
 
                     # Print the extracted TextEquiv content for the TextLine in the ground truth and
                     # prediction files
@@ -75,19 +79,20 @@ def process_file(args,
 
                 if ocr_region_text:
                     # Align the OCR and GS sentences
-                    aligned_sentences = align_texts(gt_region_text,
-                                                 ocr_region_text, language=args.language)
+                    aligned_sentences = align_texts(
+                        gt_region_text, ocr_region_text, language=args.language)
 
-
-                gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines],
-                                                                [gt_sentence for gt_sentence, _ in aligned_sentences])
-                ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines],
-                                                                   [ocr_sentence for _, ocr_sentence in aligned_sentences])
+                gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines], [
+                                                                   gt_sentence for gt_sentence, _ in aligned_sentences])
+                ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines], [
+                                                                    ocr_sentence for _, ocr_sentence in aligned_sentences])
 
                 try:
-                    assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
-                except:
-                    import pdb;pdb.set_trace()
+                    assert len(gt_reconstructed_sentences) == len(
+                        ocr_reconstructed_sentences)
+                except BaseException:
+                    import pdb
+                    pdb.set_trace()
                 # Create the mapping list
 
                 # Append the output to a JSON Lines file
@@ -99,11 +104,13 @@ def process_file(args,
                                                 Const.OCR: {Const.LINE: clean_text(ocr_line),
                                                             Const.SENTENCE: clean_text(ocr_reconstructed_sentence),
                                                             Const.REGION: clean_text(ocr_region_text)},
-                                                # TODO removed temporarily the region - too large
+                                                # TODO removed temporarily the
+                                                # region - too large
                                                 Const.GROUND: {Const.LINE: clean_text(gt_line),
                                                                Const.SENTENCE: clean_text(gt_reconstructed_sentence),
                                                                Const.REGION: clean_text(gt_region_text)}
-                                                # TODO removed temporarily the region - too large
+                                                # TODO removed temporarily the
+                                                # region - too large
                                                 })
                         outfile.write(json_line + "\n")
                         outfile.flush()
@@ -149,7 +156,8 @@ if __name__ == "__main__":
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]).lower())
+    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(
+        args.input_dir.split('/')[-1]).lower())
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
@@ -167,7 +175,11 @@ if __name__ == "__main__":
 
                     logging.info('Analyzing file {}'.format(input_file))
 
-                    process_file(args=args, input_file=input_file, ocr_file=ocr_file, output_file=output_file)
+                    process_file(
+                        args=args,
+                        input_file=input_file,
+                        ocr_file=ocr_file,
+                        output_file=output_file)
                     progress_bar.update(1)
                 else:
                     if os.path.exists(os.path.join(root, file)):

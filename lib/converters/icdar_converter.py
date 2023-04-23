@@ -11,6 +11,8 @@ import glob
 import pandas as pd
 
 # @lru_cache(maxsize=64)
+
+
 def load_metadada(args):
     metadata_path = None
     for path in glob.glob(args.input_dir + '/**/*', recursive=True):
@@ -24,18 +26,21 @@ def load_metadada(args):
         metadata = f.readlines()
 
     metadata = [line.strip().split(';') for line in metadata]
-    columns, metadata = metadata[0], metadata[1:] # Skip columns line: 'File;Date;Type;NbAlignedChar'
+    # Skip columns line: 'File;Date;Type;NbAlignedChar'
+    columns, metadata = metadata[0], metadata[1:]
 
     metadata = pd.DataFrame(metadata, columns=columns)
-    metadata['File'] = metadata['File'].apply(lambda x: x.replace('\\', '/')) # Replace Windows style file names
+    metadata['File'] = metadata['File'].apply(
+        lambda x: x.replace(
+            '\\', '/'))  # Replace Windows style file names
 
     args.metadata = metadata
     return metadata
 
 
-
 def lookup_metadata(args, input_file):
-    file_metadata = args.metadata[args.metadata.File == '/'.join(input_file.split('/')[-2:])]
+    file_metadata = args.metadata[args.metadata.File ==
+                                  '/'.join(input_file.split('/')[-2:])]
     return file_metadata.to_dict('records')[0]
 
 
@@ -45,7 +50,6 @@ def process_file(args, input_file, output_file):
         data = infile.readlines()
 
     file_metadata = lookup_metadata(args, input_file)
-
 
     # Extract OCR and GS sentences from the data list
     # [OCR_toInput] [OCR_aligned] [ GS_aligned]
@@ -57,7 +61,7 @@ def process_file(args, input_file, output_file):
     try:
         # Align the OCR and GS sentences
         aligned_sentences = align_texts(gt_text, ocr_text, language=language)
-    except:
+    except BaseException:
         # Defaulting to English
         aligned_sentences = align_texts(gt_text, ocr_text, language='en')
 
@@ -67,19 +71,24 @@ def process_file(args, input_file, output_file):
             json_line = json.dumps({Const.FILE: input_file,
                                     Const.OCR: {Const.LINE: Const.NONE,
                                                 Const.SENTENCE: ocr_sentence,
-                                                Const.REGION: Const.NONE}, # TODO removed temporarily the region - too large
+                                                Const.REGION: Const.NONE},  # TODO removed temporarily the region - too large
                                     Const.GROUND: {Const.LINE: Const.NONE,
-                                                Const.SENTENCE: gs_sentence,
-                                                Const.REGION: Const.NONE} # TODO removed temporarily the region - too large
+                                                   Const.SENTENCE: gs_sentence,
+                                                   Const.REGION: Const.NONE}  # TODO removed temporarily the region - too large
                                     } | file_metadata)
 
             outfile.write(json_line + "\n")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process text files and align sentences.")
-    parser.add_argument("--input_dir", help="The path to the input directory containing the text files.")
-    parser.add_argument("--output_dir", help="The path to the output directory where JSON Lines files will be created.")
+    parser = argparse.ArgumentParser(
+        description="Process text files and align sentences.")
+    parser.add_argument(
+        "--input_dir",
+        help="The path to the input directory containing the text files.")
+    parser.add_argument(
+        "--output_dir",
+        help="The path to the output directory where JSON Lines files will be created.")
     parser.add_argument(
         "--language", default='de',
         help="The language of the dataset.")
@@ -110,7 +119,8 @@ if __name__ == "__main__":
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+    output_file = os.path.join(args.output_dir,
+                               '{}.jsonl'.format(args.input_dir.split('/')[-1]))
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
@@ -123,6 +133,9 @@ if __name__ == "__main__":
 
                 logging.info('Analyzing file {}'.format(input_file))
 
-                process_file(args=args, input_file=input_file, output_file=output_file)
+                process_file(
+                    args=args,
+                    input_file=input_file,
+                    output_file=output_file)
                 progress_bar.update(1)
     progress_bar.close()

@@ -3,6 +3,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from transformers import LlamaForCausalLM, LlamaTokenizer
 
+
 class Prompt:
 
     def __call__(self, prompt, options=None, device='cpu'):
@@ -16,6 +17,7 @@ class GPTPrompt(Prompt):
     '''
     Prompting for GPT-2 anf GPT-3 through their API
     '''
+
     def __init__(self, api_key=None, model='text-davinci-003', device='cpu'):
         openai.api_key = api_key
 
@@ -35,30 +37,29 @@ class GPTPrompt(Prompt):
         try:
             result = openai.Completion.create(
                 prompt=prompt, **options)['choices'][0]['text']
-        except:
+        except BaseException:
             # {
             #     "model": "text-davinci-edit-001",
             #     "input": "What day of the wek is it?",
             #     "instruction": "Fix the spelling mistakes",
             # }
-            options.update({'model': options['engine']}) # Chat endpoints do not have the same engine
+            # Chat endpoints do not have the same engine
+            options.update({'model': options['engine']})
             options.pop('engine')
-            result = openai.ChatCompletion.create(**options,
-                                                  messages=[{"role": "user",
-                                                             "content": prompt}])['choices'][0]['message']['content']
+            result = openai.ChatCompletion.create(
+                **options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
 
         return result
-
 
 
 class HFPrompt(Prompt):
     '''
     Prompting for HuggingFace models that can be loaded with AutoForCausalLM
     '''
+
     def __init__(self, api_key=None, model="bigscience/bloom", device='cpu'):
 
         if 'llama' in model.lower():
-
 
             self. tokenizer = LlamaTokenizer.from_pretrained(model)
             self.model = LlamaForCausalLM.from_pretrained(model)
@@ -66,7 +67,8 @@ class HFPrompt(Prompt):
         elif "alpaca" in model.lower():
             from peft import PeftModel
 
-            self.tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
+            self.tokenizer = LlamaTokenizer.from_pretrained(
+                "decapoda-research/llama-7b-hf")
 
             BASE_MODEL = "decapoda-research/llama-7b-hf"
             LORA_WEIGHTS = "tloen/alpaca-lora-7b"
@@ -79,8 +81,7 @@ class HFPrompt(Prompt):
                     device_map="auto",
                 )
                 self.model = PeftModel.from_pretrained(
-                    model, LORA_WEIGHTS, torch_dtype=torch.float16, force_download=True
-                )
+                    model, LORA_WEIGHTS, torch_dtype=torch.float16, force_download=True)
             elif device == "mps":
                 model = LlamaForCausalLM.from_pretrained(
                     BASE_MODEL,
@@ -106,8 +107,6 @@ class HFPrompt(Prompt):
         else:
             self.model = AutoModelForCausalLM.from_pretrained(model).to(device)
             self.tokenizer = AutoTokenizer.from_pretrained(model)
-
-
 
     def prediction(self, prompt, options=None, search='topk'):
 

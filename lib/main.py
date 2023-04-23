@@ -47,8 +47,6 @@ def generate(
 
     openai.api_key = config['SECRET_KEY']
 
-
-
     for model in config['models']:
 
         (model_name, experiment_details), = model.items()
@@ -68,13 +66,20 @@ def generate(
         else:
             logger.info(f"Model prompt missing: {prompt_path}.")
 
-        results_dir = os.path.join(output_dir, experiment_details['prompt'].replace('.txt', ''))
+        results_dir = os.path.join(
+            output_dir,
+            experiment_details['prompt'].replace(
+                '.txt',
+                ''))
         if not os.path.exists(results_dir):
             os.makedirs(results_dir)
 
         module = importlib.import_module('prompt')
         class_ = getattr(module, model_class)
-        instance = class_(api_key=config['SECRET_KEY'], model=model_name, device=device)
+        instance = class_(
+            api_key=config['SECRET_KEY'],
+            model=model_name,
+            device=device)
 
         # Iterate in the data folder with all datasets
         for root, dirs, files in os.walk(input_dir, topdown=False):
@@ -113,7 +118,8 @@ def generate(
                                     for temperature in tqdm(
                                         experiment_details["temperatures"], total=len(
                                             experiment_details["temperatures"])):
-                                        data.update({"temperature": temperature})
+                                        data.update(
+                                            {"temperature": temperature})
 
                                         options = {
                                             'engine': model_name,
@@ -128,7 +134,8 @@ def generate(
                                         n_str = "samples" if n > 1 else "sample"
 
                                         # logger.info(
-                                        #     f"Writing {n} {n_str} at temperature {temperature} to {output_file}.")
+                                        # f"Writing {n} {n_str} at temperature
+                                        # {temperature} to {output_file}.")
 
                                         for idx in trange(n):
 
@@ -154,7 +161,7 @@ def generate(
                                         'max_tokens': 512
                                     }
                                     # logger.info(
-                                    #     f"Writing {n} {n_str} to {output_file}.")
+                                    # f"Writing {n} {n_str} to {output_file}.")
 
                                     for idx in trange(n):
                                         result = instance.prediction(
