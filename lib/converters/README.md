@@ -96,6 +96,11 @@ je ne m' avance pas
 
 To discuss here what is the ground truth.
 
+```
+python quaero_converter.py --input_dir ../../data/datasets/ocr/original/quaero-broadcast/ \
+                          --output_dir ../../data/datasets/ocr/converted
+```
+
 ## Makefile converters
 
 For running all converters:
