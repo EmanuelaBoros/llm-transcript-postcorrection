@@ -9,6 +9,9 @@ from functools import lru_cache
 from const import Const
 import glob
 import pandas as pd
+import warnings
+warnings.filterwarnings('ignore')
+
 
 # @lru_cache(maxsize=64)
 

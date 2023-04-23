@@ -1,6 +1,8 @@
 import pysbd
 from genalog.text import anchor
 import re
+import warnings
+warnings.filterwarnings('ignore')
 
 
 def clean_text(text):

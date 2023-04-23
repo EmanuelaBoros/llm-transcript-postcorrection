@@ -13,8 +13,8 @@ DATA_PATH="$1"
 datasets="ocr:icdar-2017,icdar-2019,impresso-nzz asr:quaero-broadcast"
 
 # Mapping of dataset names to dataset pseudo names
-dataset_pseudo_names="icdar-2017:icdar icdar-2019:icdar impresso-nzz:nzz quaero-broadcast:quaero"
-
+dataset_pseudo_names="quaero-broadcast:quaero"
+#icdar-2017:icdar icdar-2019:icdar impresso-nzz:nzz
 # Function to split datasets string into an array
 split_datasets() {
     local datasets_str="$1"
@@ -42,7 +42,7 @@ for subfolder_datasets in $datasets; do
 
                 if [[ "$dataset" == "$dataset_name" ]]; then
                     echo "Converting dataset: $dataset (Pseudo name: $pseudo_name)"
-                    python "${pseudo_name}_converter.py" --input_dir "$input_dir" --output_dir "$DATA_PATH/$subfolder/converted/$dataset"
+                    python "${pseudo_name}_converter.py" --input_dir "$input_dir" --output_dir "$DATA_PATH/$subfolder/converted/"
                     break
                 fi
             done
