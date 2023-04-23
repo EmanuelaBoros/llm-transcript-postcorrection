@@ -17,6 +17,17 @@ Const.GROUND: {Const.LINE: the groundtruth text line,
 
 All converters have the same parameters (`input_dir` and `output_dir`) and generate a dataset `$DATASET$` in `$OUTPUT_DIR` (e.g., `data/ocr/converted`).
 
+
+## Makefile converters
+
+For running all converters:
+`./convert.sh /path/to/your/data`
+
+Example:
+`./convert.sh ../../data/datasets`
+
+
+
 ### Converter ICDAR 2017 & 2019
 The dataset contains text files [./lang_type/#.txt]
 	- 1st line "[OCR_toInput] " => Raw OCRed text to be denoised.
@@ -101,10 +112,3 @@ python quaero_converter.py --input_dir ../../data/datasets/ocr/original/quaero-b
                           --output_dir ../../data/datasets/ocr/converted
 ```
 
-## Makefile converters
-
-For running all converters:
-`./convert.sh /path/to/your/data`
-
-Example:
-`./convert.sh ../../data/datasets`
