@@ -35,9 +35,7 @@ def load_metadada(args):
 
 
 def lookup_metadata(args, input_file):
-
     file_metadata = args.metadata[args.metadata.File == '/'.join(input_file.split('/')[-2:])]
-
     return file_metadata.to_dict('records')[0]
 
 

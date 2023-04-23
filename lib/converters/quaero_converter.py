@@ -3,112 +3,76 @@ import argparse
 import logging
 from tqdm import tqdm
 import json
-import pysbd
-from genalog.text import anchor
+from langdetect import detect
 import re
-
-
-def clean_text(text):
-    cleaned_text = text.strip()
-    cleaned_text = cleaned_text.replace('@', '')
-    cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
-    return cleaned_text
-
+from const import Const
+from utils import clean_text, align_texts, reconstruct_sentences
 
 def remove_tags(text):
     text = re.sub(r'<[^>]+>', '', text)
-
     return text
 
 
-def align_texts(gt_text, ocr_text, language='en'):
-    segmenter = pysbd.Segmenter(language=language, clean=False)
-
-    # We align the texts with RETAS Method
-    aligned_gt, aligned_noise = anchor.align_w_anchor(gt_text, ocr_text)
-    # print(f"Original: {gt_text}")
-    # print(f"OCR: {ocr_text}")
-    # print(f"Aligned ground truth: {aligned_gt}")
-    # print(f"Aligned noise:        {aligned_noise}\n")
-
-    # We split the ground truth sentences and we consider them as the
-    # "correct" tokenization
-    gt_sentences = segmenter.segment(aligned_gt)
-
-    # We split the noisy text following the sentences' lengths in the ground
-    # truth
-    sentence_lengths = [len(sentence) for sentence in gt_sentences]
-
-    ocr_sentences = []
-    start = 0
-
-    for length in sentence_lengths:
-        end = start + length
-        ocr_sentences.append(aligned_noise[start:end])
-        start = end
-
-    assert len(gt_sentences) == len(ocr_sentences)
-
-    aligned_sentences = []
-    # Clean the sentences from the alignment characters @
-    for gt_sentence, ocr_sentence in zip(gt_sentences, ocr_sentences):
-        aligned_sentences.append(
-            (clean_text(gt_sentence), clean_text(ocr_sentence)))
-
-    return aligned_sentences
-
-
-def process_file(
+def process_file(args,
         input_file: str,
-        output_file: str,
-        extraction_type: str = 'region') -> None:
+        output_file: str) -> None:
 
     # Parse the ground truth file
     with open(input_file, 'r', encoding='utf-8', errors='replace') as f:
         text = f.read()
 
+
     # Remove the NE tags
     text = remove_tags(text)
+    language = detect(text)
 
     lines = text.split('\n')
     aligned_texts = []
 
     # The lines are annotated with entities, where entities are Uppercased
     # thus, the ASR sentence is lowercase
-    aligned_article_lines = []
+    aligned_lines = []
     for line in lines:
-        aligned_article_lines.append((line, line.lower()))
-
-    if extraction_type == 'line':
-        aligned_texts += aligned_article_lines
+        aligned_lines.append((line, line.lower()))
 
     # The region in Quaero is the article level
-    elif extraction_type == 'region':
-        gt_region_text = ' '.join(
-            [gt_line for gt_line, _ in aligned_article_lines]).strip()
-        ocr_region_text = ' '.join(
-            [ocr_line for _, ocr_line in aligned_article_lines]).strip()
-        aligned_texts.append((gt_region_text, ocr_region_text))
+    gt_region_text = ' '.join(
+        [gt_line for gt_line, _ in aligned_lines]).strip()
+    ocr_region_text = ' '.join(
+        [ocr_line for _, ocr_line in aligned_lines]).strip()
 
-    elif extraction_type == 'sentence':
-        gt_region_text = ' '.join(
-            [gt_line for gt_line, _ in aligned_article_lines]).strip()
-        ocr_region_text = ' '.join(
-            [ocr_line for _, ocr_line in aligned_article_lines]).strip()
-        aligned_texts += align_texts(gt_region_text,
-                                     ocr_region_text, language=args.language)
+    aligned_sentences = align_texts(gt_region_text, ocr_region_text,
+                                    language=language)
 
-    else:
-        raise ValueError(
-            "Invalid extraction_type. Choose between 'line', 'region', or 'sentence'.")
+    gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines],
+                                                       [gt_sentence for gt_sentence, _ in aligned_sentences])
+    ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines],
+                                                        [ocr_sentence for _, ocr_sentence in aligned_sentences])
 
-    # Write the output to a JSON Lines file
-    with open(output_file, "w") as outfile:
-        for text in aligned_texts:
-            ocr_text, gs_text = text[0], text[1]
-            json_line = json.dumps(
-                {"ocr_text": clean_text(ocr_text), "correct_text": clean_text(gs_text)})
+    try:
+        assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
+    except:
+        import pdb;
+        pdb.set_trace()
+    # Create the mapping list
+
+    # Append the output to a JSON Lines file
+    with open(output_file, "a") as outfile:
+        for gt_reconstructed_sentence, gt_line, ocr_reconstructed_sentence, ocr_line in \
+                zip(gt_reconstructed_sentences, [gt_line for gt_line, _ in aligned_lines],
+                    ocr_reconstructed_sentences, [ocr_line for _, ocr_line in aligned_lines]):
+            json_line = json.dumps({Const.FILE: input_file,
+                                    Const.OCR: {Const.LINE: clean_text(ocr_line),
+                                                Const.SENTENCE: clean_text(ocr_reconstructed_sentence),
+                                                Const.REGION: clean_text(ocr_region_text)},
+                                    # TODO removed temporarily the region - too large
+                                    Const.GROUND: {Const.LINE: clean_text(gt_line),
+                                                   Const.SENTENCE: clean_text(gt_reconstructed_sentence),
+                                                   Const.REGION: clean_text(gt_region_text)}
+                                    # TODO removed temporarily the region - too large
+                                    })
             outfile.write(json_line + "\n")
+            outfile.flush()
 
 
 if __name__ == "__main__":
@@ -120,20 +84,8 @@ if __name__ == "__main__":
         type=str,
         help='Path to ground truth folder')
     parser.add_argument(
-        '--extraction_type',
-        type=str,
-        default='region',
-        choices=[
-            'region',
-            'line',
-            'sentence'],
-        help='Specify whether to extract the TextEquiv content per region or per line')
-    parser.add_argument(
         "--output_dir",
         help="The path to the output directory where JSON Lines files will be created.")
-    parser.add_argument(
-        "--language", default='de',
-        help="The language of the dataset.")
     parser.add_argument(
         "--debug",
         help="Print lots of debugging statements",
@@ -158,31 +110,21 @@ if __name__ == "__main__":
         desc="Processing files",
         unit="file")
 
+    output_dir_path = args.input_dir.replace('original', 'converted')
+
+    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+    if os.path.exists(output_file):
+        logging.info('{} already exists. It will be deleted.')
+        os.remove(output_file)
+
+    logging.info('Writing output {}'.format(output_file))
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
             if file.endswith(".ne"):
                 input_file = os.path.join(root, file)
 
                 logging.info('Analyzing file {}'.format(input_file))
-                # Compute the output file path by replacing the input directory
-                # with the output directory
-                output_file = input_file.replace(
-                    'original',
-                    'converted').replace(
-                    file,
-                    os.path.join(
-                        args.extraction_type,
-                        file)).replace(
-                    ".ne",
-                    ".jsonl")
-                logging.info('Writing output {}'.format(output_file))
-                # Create the output directory if it does not exist
-                output_dir_path = os.path.dirname(output_file)
 
-                if not os.path.exists(output_dir_path):
-                    os.makedirs(output_dir_path)
-
-                process_file(input_file, output_file,
-                             extraction_type=args.extraction_type)
+                process_file(args=args, input_file=input_file, output_file=output_file)
                 progress_bar.update(1)
     progress_bar.close()

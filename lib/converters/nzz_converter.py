@@ -1,16 +1,11 @@
 import os
 from bs4 import BeautifulSoup
 import argparse
-import textdistance
 import logging
 from tqdm import tqdm
 import json
-import pysbd
-from genalog.text import anchor
 from const import Const
 from utils import clean_text, align_texts, reconstruct_sentences
-
-
 
 def process_file(args,
         input_file: str,
@@ -101,13 +96,13 @@ def process_file(args,
                             zip(gt_reconstructed_sentences, [gt_line for gt_line, _ in aligned_lines],
                                 ocr_reconstructed_sentences, [ocr_line for _, ocr_line in aligned_lines]):
                         json_line = json.dumps({Const.FILE: input_file,
-                                                Const.OCR: {Const.LINE: ocr_line,
-                                                            Const.SENTENCE: ocr_reconstructed_sentence,
-                                                            Const.REGION: ocr_region_text},
+                                                Const.OCR: {Const.LINE: clean_text(ocr_line),
+                                                            Const.SENTENCE: clean_text(ocr_reconstructed_sentence),
+                                                            Const.REGION: clean_text(ocr_region_text)},
                                                 # TODO removed temporarily the region - too large
-                                                Const.GROUND: {Const.LINE: gt_line,
-                                                               Const.SENTENCE: gt_reconstructed_sentence,
-                                                               Const.REGION: gt_region_text}
+                                                Const.GROUND: {Const.LINE: clean_text(gt_line),
+                                                               Const.SENTENCE: clean_text(gt_reconstructed_sentence),
+                                                               Const.REGION: clean_text(gt_region_text)}
                                                 # TODO removed temporarily the region - too large
                                                 })
                         outfile.write(json_line + "\n")
