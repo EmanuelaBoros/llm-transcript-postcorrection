@@ -12,7 +12,8 @@ def remove_tags(text):
     text = re.sub(r'<[^>]+>', '', text)
     return text
 
-
+def lookup_metadata(text):
+    pass
 def process_file(args,
         input_file: str,
         output_file: str) -> None:
@@ -26,8 +27,7 @@ def process_file(args,
     text = remove_tags(text)
     language = detect(text)
 
-    lines = text.split('\n')
-    aligned_texts = []
+    lines = [clean_text(line) for line in text.split('\n')]
 
     # The lines are annotated with entities, where entities are Uppercased
     # thus, the ASR sentence is lowercase
