@@ -3,9 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.DS_Store
+.DS_Store
+*/.DS_Store
 
-*/converted/*
-*/original/*
+#*/converted/*
+#*/original/*
 
 *.png
 *.wav
