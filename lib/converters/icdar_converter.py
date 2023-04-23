@@ -119,19 +119,6 @@ if __name__ == "__main__":
                 input_file = os.path.join(root, file)
 
                 logging.info('Analyzing file {}'.format(input_file))
-                # Compute the output file path by replacing the input directory
-                # with the output directory
-                # output_file = input_file.replace(
-                #     'original',
-                #     'converted').replace(
-                #     ".txt",
-                #     ".jsonl")
-
-                # Create the output directory if it does not exist
-                # output_dir_path = os.path.dirname(output_file)
-                #
-                # if not os.path.exists(output_dir_path):
-                #     os.makedirs(output_dir_path)
 
                 process_file(args=args, input_file=input_file, output_file=output_file)
                 progress_bar.update(1)

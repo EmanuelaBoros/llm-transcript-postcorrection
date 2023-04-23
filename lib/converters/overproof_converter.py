@@ -159,31 +159,21 @@ if __name__ == "__main__":
         desc="Processing files",
         unit="file")
 
+    output_dir_path = args.input_dir.replace('original', 'converted')
+
+    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+    if os.path.exists(output_file):
+        logging.info('{} already exists. It will be deleted.')
+        os.remove(output_file)
+
+    logging.info('Writing output {}'.format(output_file))
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
             if file.endswith(".txt"):
                 input_file = os.path.join(root, file)
 
                 logging.info('Analyzing file {}'.format(input_file))
-                # Compute the output file path by replacing the input directory
-                # with the output directory
-                output_file = input_file.replace(
-                    'original',
-                    'converted').replace(
-                    file,
-                    os.path.join(
-                        args.extraction_type,
-                        file)).replace(
-                    ".txt",
-                    ".jsonl")
-                logging.info('Writing output {}'.format(output_file))
-                # Create the output directory if it does not exist
-                output_dir_path = os.path.dirname(output_file)
 
-                if not os.path.exists(output_dir_path):
-                    os.makedirs(output_dir_path)
-
-                process_file(input_file, output_file,
-                             extraction_type=args.extraction_type)
+                process_file(args=args, input_file=input_file, output_file=output_file)
                 progress_bar.update(1)
     progress_bar.close()
