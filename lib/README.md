@@ -27,6 +27,6 @@ python icdar_converter.py --input_dir ../../data/datasets/ocr/original/icdar-201
 impresso-nzz has the XLM files in the groundtruth folder and the OCRed text by its internal ABBYY FineReader Server 11. The converter maps the files in both folder, along with the `region_id` and `line_id` in every region. If the OCRed region or text line is not found, it is disconsired.
 
 ```
-python icdar_converter.py --input_dir ../../data/datasets/ocr/original/icdar-2017/ \
+python nzz_converter.py --input_dir ../../data/datasets/ocr/original/icdar-2017/ \
                           --output_dir ../../data/datasets/ocr/converted
 ```
