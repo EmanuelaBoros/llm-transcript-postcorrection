@@ -13,8 +13,8 @@ DATA_PATH="$1"
 datasets="ocr:icdar-2017,icdar-2019,impresso-nzz asr:quaero-broadcast"
 
 # Mapping of dataset names to dataset pseudo names
-dataset_pseudo_names="quaero-broadcast:quaero"
-#icdar-2017:icdar icdar-2019:icdar impresso-nzz:nzz
+dataset_pseudo_names="quaero-broadcast:quaero icdar-2017:icdar icdar-2019:icdar impresso-nzz:nzz"
+
 # Function to split datasets string into an array
 split_datasets() {
     local datasets_str="$1"
