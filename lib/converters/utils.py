@@ -1,9 +1,9 @@
 import pysbd
 from genalog.text import anchor
-from langdetect import detect
 import re
 
-def process_text(text):
+
+def clean_text(text):
     """
     :param text:
     :return:
@@ -11,19 +11,18 @@ def process_text(text):
     # Remove any "#" characters and extra spaces
     cleaned_text = re.sub(r"#+", "", text).strip()
     cleaned_text = re.sub(r"@+", "", cleaned_text).strip()
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+    cleaned_text = cleaned_text.replace('¬ ', '')
+    cleaned_text = cleaned_text.replace('¬\n', '')
 
-    return cleaned_text
-
-
-def clean_text(text):
-    cleaned_text = text.strip()
-    cleaned_text = cleaned_text.replace('@', '')
+    # If ¬ is still in the sentence:
+    cleaned_text = cleaned_text.replace('¬', '')
     return cleaned_text
 
 
 def align_texts(gt_text, ocr_text, language='en'):
-    gt_text = process_text(gt_text)
-    ocr_text = process_text(ocr_text)
+    gt_text = clean_text(gt_text)
+    ocr_text = clean_text(ocr_text)
 
     try:
         segmenter = pysbd.Segmenter(language=language, clean=False)
@@ -59,3 +58,22 @@ def align_texts(gt_text, ocr_text, language='en'):
             (clean_text(gt_sentence), clean_text(ocr_sentence)))
 
     return aligned_sentences
+
+
+# Function to reconstruct sentences from text lines
+def reconstruct_sentences(txt_lines, sentences):
+    reconstructed_sentences = []
+    current_sentence = ""
+
+    for i, txt_line in enumerate(txt_lines):
+        current_sentence += " " + txt_line
+
+        # Check if the current sentence is in the original sentences list
+        if current_sentence in sentences:
+            reconstructed_sentences.append(current_sentence)
+            current_sentence = ""
+        # If it's the last text line and we haven't found the sentence yet, append it to the list
+        elif i == len(txt_lines) - 1:
+            reconstructed_sentences.append(current_sentence)
+
+    return reconstructed_sentences

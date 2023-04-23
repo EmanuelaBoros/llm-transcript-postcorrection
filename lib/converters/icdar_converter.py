@@ -4,7 +4,7 @@ import argparse
 from tqdm import tqdm
 import logging
 from langdetect import detect
-from utils import process_text, align_texts
+from utils import clean_text, align_texts
 from functools import lru_cache
 from const import Const
 import glob
@@ -51,12 +51,17 @@ def process_file(args, input_file, output_file):
 
     # Extract OCR and GS sentences from the data list
     # [OCR_toInput] [OCR_aligned] [ GS_aligned]
-    gt_text = process_text(data[2].replace('[ GS_aligned]', '').strip())
-    ocr_text = process_text(data[0].replace('[OCR_toInput]', '').strip())
+    gt_text = clean_text(data[2].replace('[ GS_aligned]', '').strip())
+    ocr_text = clean_text(data[0].replace('[OCR_toInput]', '').strip())
 
     language = detect(gt_text)
-    # Align the OCR and GS sentences
-    aligned_sentences = align_texts(gt_text, ocr_text, language=language)
+
+    try:
+        # Align the OCR and GS sentences
+        aligned_sentences = align_texts(gt_text, ocr_text, language=language)
+    except:
+        # Defaulting to English
+        aligned_sentences = align_texts(gt_text, ocr_text, language='en')
 
     # Write the output to a JSON Lines file
     with open(output_file, "a") as outfile:

@@ -7,52 +7,12 @@ from tqdm import tqdm
 import json
 import pysbd
 from genalog.text import anchor
+from const import Const
+from utils import clean_text, align_texts, reconstruct_sentences
 
 
-def clean_text(text):
-    cleaned_text = text.strip()
-    cleaned_text = cleaned_text.replace('@', '')
-    return cleaned_text
 
-
-def align_texts(gt_text, ocr_text, language='en'):
-    segmenter = pysbd.Segmenter(language=language, clean=False)
-
-    # We align the texts with RETAS Method
-    aligned_gt, aligned_noise = anchor.align_w_anchor(gt_text, ocr_text)
-    # print(f"Original: {gt_text}")
-    # print(f"OCR: {ocr_text}")
-    # print(f"Aligned ground truth: {aligned_gt}")
-    # print(f"Aligned noise:        {aligned_noise}\n")
-
-    # We split the ground truth sentences and we consider them as the
-    # "correct" tokenization
-    gt_sentences = segmenter.segment(aligned_gt)
-
-    # We split the noisy text following the sentences' lengths in the ground
-    # truth
-    sentence_lengths = [len(sentence) for sentence in gt_sentences]
-
-    ocr_sentences = []
-    start = 0
-
-    for length in sentence_lengths:
-        end = start + length
-        ocr_sentences.append(aligned_noise[start:end])
-        start = end
-
-    assert len(gt_sentences) == len(ocr_sentences)
-
-    aligned_sentences = []
-    # Clean the sentences from the alignment characters @
-    for gt_sentence, ocr_sentence in zip(gt_sentences, ocr_sentences):
-        aligned_sentences.append(
-            (clean_text(gt_sentence), clean_text(ocr_sentence)))
-
-    return aligned_sentences
-
-
-def process_file(
+def process_file(args,
         input_file: str,
         ocr_file: str,
         output_file: str,
@@ -78,67 +38,80 @@ def process_file(
 
             # Extract the TextEquiv content for the TextRegion in the ground
             # truth and prediction files
-            gt_region_text = gt_region.findAll('TextEquiv')[-1].text.strip()
+            gt_region_text = clean_text(gt_region.findAll('TextEquiv')[-1].text.strip())
 
             ocr_region_text = None
             try:
-                ocr_region_text = ocr_region.findAll(
-                    'TextEquiv')[-1].text.strip()
-            except BaseException:
-                print(f'{region_id} not found in {ocr_file}')
+                ocr_region_text = clean_text(ocr_region.findAll(
+                    'TextEquiv')[-1].text.strip())
+            except BaseException as ex:
+                print(f'{region_id} not found in {ocr_file}. Exception: {ex}')
             # Print the extracted TextEquiv content for the TextRegion in the
             # ground truth and prediction files
 
-            # If the extraction type is "line", iterate over each TextLine in
-            # the TextRegion
-            if extraction_type == 'line':
-                # aligned_lines = []
+            # If the region was found
+            if ocr_region_text:
+                aligned_lines = []
                 for gt_line in gt_region.find_all('TextLine'):
                     # Find the corresponding TextLine in the prediction file
                     line_id = gt_line['id']
-                    ocr_line = ocr_soup.find('TextLine', {'id': line_id})
+                    ocr_line = ocr_region.find('TextLine', {'id': line_id})
 
                     # Extract the TextEquiv content for the TextLine in the
                     # ground truth and prediction files
-                    gt_line_text = gt_line.find('TextEquiv').text
-                    pred_line_text = ocr_line.find('TextEquiv').text
+                    gt_line_text = clean_text(gt_line.find('TextEquiv').text.strip())
+
+                    ocr_line_text = None
+                    try:
+                        ocr_line_text = clean_text(ocr_line.findAll(
+                            'TextEquiv')[-1].text.strip())
+                        # ocr_line_text = ocr_line.find('TextEquiv').text.strip()
+                    except BaseException as ex:
+                        print(f'Line {line_id} not found in {ocr_file} in region {region_id}. Exception: {ex}')
 
                     # Print the extracted TextEquiv content for the TextLine in the ground truth and
                     # prediction files
-                    print(
-                        f'Ground truth TextLine {line_id}:\n{gt_line_text}\n')
-                    print(
-                        f'Prediction TextLine {line_id}:\n{pred_line_text}\n')
-
-                    aligned_texts.append((gt_line, ocr_line))
-
-            # If the extraction type is "region", skip the TextLine iteration
-            elif extraction_type == 'region':
+                    if ocr_line_text:
+                        aligned_lines.append((gt_line_text, ocr_line_text))
 
                 if ocr_region_text:
                     # Add the already aligned regions
                     aligned_texts += [(gt_region_text, ocr_region_text)]
 
-                # If the extraction type is "region", skip the TextLine
-                # iteration
-            elif extraction_type == 'sentence':
-
                 if ocr_region_text:
                     # Align the OCR and GS sentences
-                    aligned_texts += align_texts(gt_region_text,
+                    aligned_sentences = align_texts(gt_region_text,
                                                  ocr_region_text, language=args.language)
 
-            # Raise an error if the extraction type is invalid
-            else:
-                raise ValueError(
-                    f'Invalid extraction type "{extraction_type}"')
 
-        # Write the output to a JSON Lines file
-        with open(output_file, "w") as outfile:
-            for ocr_text, gs_text in aligned_texts:
-                json_line = json.dumps(
-                    {"ocr_text": ocr_text, "correct_text": gs_text})
-                outfile.write(json_line + "\n")
+                gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines],
+                                                                [gt_sentence for gt_sentence, _ in aligned_sentences])
+                ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines],
+                                                                   [ocr_sentence for _, ocr_sentence in aligned_sentences])
+
+                try:
+                    assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
+                except:
+                    import pdb;pdb.set_trace()
+                # Create the mapping list
+
+                # Append the output to a JSON Lines file
+                with open(output_file, "a") as outfile:
+                    for gt_reconstructed_sentence, gt_line, ocr_reconstructed_sentence, ocr_line in \
+                            zip(gt_reconstructed_sentences, [gt_line for gt_line, _ in aligned_lines],
+                                ocr_reconstructed_sentences, [ocr_line for _, ocr_line in aligned_lines]):
+                        json_line = json.dumps({Const.FILE: input_file,
+                                                Const.OCR: {Const.LINE: ocr_line,
+                                                            Const.SENTENCE: ocr_reconstructed_sentence,
+                                                            Const.REGION: ocr_region_text},
+                                                # TODO removed temporarily the region - too large
+                                                Const.GROUND: {Const.LINE: gt_line,
+                                                               Const.SENTENCE: gt_reconstructed_sentence,
+                                                               Const.REGION: gt_region_text}
+                                                # TODO removed temporarily the region - too large
+                                                })
+                        outfile.write(json_line + "\n")
+                        outfile.flush()
 
 
 if __name__ == "__main__":
@@ -150,15 +123,6 @@ if __name__ == "__main__":
         type=str,
         help='Path to ground truth folder')
     parser.add_argument('--ocr_dir', type=str, help='Path to OCRed folder')
-    parser.add_argument(
-        '--extraction_type',
-        type=str,
-        default='region',
-        choices=[
-            'region',
-            'line',
-            'sentence'],
-        help='Specify whether to extract the TextEquiv content per region or per line')
     parser.add_argument(
         "--output_dir",
         help="The path to the output directory where JSON Lines files will be created.")
@@ -190,19 +154,40 @@ if __name__ == "__main__":
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]).lower())
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
+
+    with open(os.path.join('/'.join(args.input_dir.split('/')[:-2]), 'test-set-filenames.txt'), 'r') as f:
+        test_set_filenames = [x.strip() for x in f.readlines()]
 
     logging.info('Writing output {}'.format(output_file))
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
             if file.endswith(".xml"):
-                input_file = os.path.join(root, file)
+                if file in test_set_filenames:
+                    input_file = os.path.join(root, file)
+                    ocr_file = os.path.join(args.ocr_dir, file)
 
-                logging.info('Analyzing file {}'.format(input_file))
+                    logging.info('Analyzing file {}'.format(input_file))
 
-                process_file(args=args, input_file=input_file, output_file=output_file)
-                progress_bar.update(1)
+                    process_file(args=args, input_file=input_file, ocr_file=ocr_file, output_file=output_file)
+                    progress_bar.update(1)
+                else:
+                    if os.path.exists(os.path.join(root, file)):
+                        print(f'Deleting {file}.')
+                        os.remove(os.path.join(root, file))
+                        if os.path.exists(os.path.join(args.ocr_dir, file)):
+                            os.remove(os.path.join(args.ocr_dir, file))
+
+    # Removing the OCRed files that are not in test-set-filenames.
+    # There are more than the groundtruth.
+    for root, dirs, files in os.walk(args.ocr_dir):
+        for file in files:
+            if file.endswith(".xml"):
+                if file not in test_set_filenames:
+                    print(f'Deleting {file}.')
+                    if os.path.exists(os.path.join(args.ocr_dir, file)):
+                        os.remove(os.path.join(args.ocr_dir, file))
     progress_bar.close()
