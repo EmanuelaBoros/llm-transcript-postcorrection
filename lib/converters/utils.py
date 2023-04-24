@@ -86,40 +86,38 @@ def reconstruct_text(txt_lines, sentences):
     return reconstructed_text, line_index_mapping, sentence_index_mapping
 
 
-def map_line_to_sentence(line_index_mapping, sentence_index_mapping):
-    mapping = []
-
-    for line_index in line_index_mapping:
-        line_mapping = None
-        max_overlap = -1
-
-        for sentence_index in sentence_index_mapping:
-            overlap_start = max(line_index["start_index"], sentence_index["start_index"])
-            overlap_end = min(line_index["end_index"], sentence_index["end_index"])
-            overlap = overlap_end - overlap_start + 1
-            line_coverage = overlap / (line_index["end_index"] - line_index["start_index"] + 1)
-
-            if line_coverage > 0.5 and overlap > max_overlap:
-                max_overlap = overlap
-                line_mapping = (line_index["line"], sentence_index["sentence"])
-
-        if line_mapping is None:
-            closest_sentence = None
-            min_distance = float("inf")
-            for sentence_index in sentence_index_mapping:
-                distance = min(abs(line_index["start_index"] - sentence_index["start_index"]),
-                               abs(line_index["end_index"] - sentence_index["end_index"]))
-                if distance < min_distance:
-                    min_distance = distance
-                    closest_sentence = sentence_index["sentence"]
-            line_mapping = (line_index["line"], closest_sentence)
-
-        if line_mapping[1] is None:
-            for sentence_index in sentence_index_mapping:
-                if line_index["start_index"] >= sentence_index["start_index"] and line_index["end_index"] <= sentence_index["end_index"]:
-                    line_mapping = (line_index["line"], sentence_index["sentence"])
+def map_lines_to_sentences(lines, sentences):
+    line_index_mapping = {}
+    sentence_index_mapping = {}
+    result = []
+    for i, line in enumerate(lines):
+        if i not in line_index_mapping:
+            for j, sentence in enumerate(sentences):
+                if line in sentence:
+                    sentence_index_mapping[j] = sentence
+                    result.append((line, sentence))
+                    break
+                elif sentence in line:
+                    sentence_index_mapping[j] = sentence
+                    result.append((line, sentence))
                     break
 
-        mapping.append(line_mapping)
+    for i, sentence in enumerate(sentences):
+        sentence_index_mapping[i] = sentence
+        start = 0
+        for j, line in enumerate(lines):
+            if sentence in line:
+                line_index_mapping[j] = sentence
+                result.append((line, sentence))
+                start = len(line)
+            elif start > 0 and line in sentence[start:]:
+                line_index_mapping[j] = sentence
+                result.append((line, sentence))
+                start = 0
+            elif sentence in line:
+                line_index_mapping[j] = sentence
+                result.append((line, sentence))
 
-    return mapping
+    return result
+
+

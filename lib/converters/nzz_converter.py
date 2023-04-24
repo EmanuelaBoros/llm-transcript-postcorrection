@@ -86,17 +86,12 @@ def process_file(args,
                     [ocr_line for _, ocr_line in aligned_lines], \
                     [ocr_sentence for _, ocr_sentence in aligned_sentences]
 
-                print(gt_lines, gt_sentences)
+                # print(gt_lines, gt_sentences)
 
-                from utils import reconstruct_text, map_line_to_sentence
-                reconstructed_text, line_index_mapping, sentence_index_mapping = reconstruct_text(gt_lines, gt_sentences)
-                gt_reconstructed_sentences = map_line_to_sentence(line_index_mapping, sentence_index_mapping)
-                print(gt_reconstructed_sentences)
+                from utils import map_lines_to_sentences
+                gt_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences)
 
-                reconstructed_text, line_index_mapping, sentence_index_mapping = reconstruct_text(ocr_lines, ocr_sentences)
-                ocr_reconstructed_sentences = map_line_to_sentence(line_index_mapping, sentence_index_mapping)
-                print(ocr_reconstructed_sentences)
-                print('---'*10)
+                ocr_reconstructed_sentences = map_lines_to_sentences(ocr_lines, ocr_sentences)
                 try:
                     assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
                 except BaseException:
