@@ -6,7 +6,7 @@ import json
 from langdetect import detect
 import re
 from const import Const
-from utils import clean_text, align_texts, reconstruct_sentences
+from utils import clean_text, align_texts
 
 
 def remove_tags(text):
@@ -69,17 +69,17 @@ def process_file(args,
 
     # Append the output to a JSON Lines file
     with open(output_file, "a") as outfile:
-        for gt_reconstructed_sentence, gt_line, ocr_reconstructed_sentence, ocr_line in \
-                zip(gt_reconstructed_sentences, [gt_line for gt_line, _ in aligned_lines],
-                    ocr_reconstructed_sentences, [ocr_line for _, ocr_line in aligned_lines]):
+        for gt_element, ocr_element in zip(gt_reconstructed_sentences, ocr_reconstructed_sentences):
+            (gt_line, gt_sentence) = gt_element
+            (ocr_line, ocr_sentence) = ocr_element
             json_line = json.dumps({Const.FILE: input_file,
                                     Const.OCR: {Const.LINE: clean_text(ocr_line),
-                                                Const.SENTENCE: clean_text(ocr_reconstructed_sentence),
+                                                Const.SENTENCE: clean_text(ocr_sentence),
                                                 Const.REGION: clean_text(ocr_region_text)},
                                     # TODO removed temporarily the region - too
                                     # large
                                     Const.GROUND: {Const.LINE: repair_punctuation(clean_text(gt_line)),
-                                                   Const.SENTENCE: repair_punctuation(clean_text(gt_reconstructed_sentence)),
+                                                   Const.SENTENCE: repair_punctuation(clean_text(gt_sentence)),
                                                    Const.REGION: repair_punctuation(clean_text(gt_region_text))}
                                     # TODO removed temporarily the region - too
                                     # large
