@@ -64,20 +64,62 @@ def align_texts(gt_text, ocr_text, language='en'):
 
 
 # Function to reconstruct sentences from text lines
-def reconstruct_sentences(txt_lines, sentences):
-    reconstructed_sentences = []
-    current_sentence = ""
+def reconstruct_text(txt_lines, sentences):
+    reconstructed_text = " ".join(txt_lines)
+    line_index_mapping = []
+    sentence_index_mapping = []
 
-    for i, txt_line in enumerate(txt_lines):
-        current_sentence += " " + txt_line
+    for line in txt_lines:
+        start_index = reconstructed_text.find(line)
 
-        # Check if the current sentence is in the original sentences list
-        if current_sentence in sentences:
-            reconstructed_sentences.append(current_sentence)
-            current_sentence = ""
-        # If it's the last text line and we haven't found the sentence yet,
-        # append it to the list
-        elif i == len(txt_lines) - 1:
-            reconstructed_sentences.append(current_sentence)
+        if start_index != -1:
+            end_index = start_index + len(line)
+            line_index_mapping.append({"line": line, "start_index": start_index, "end_index": end_index})
 
-    return reconstructed_sentences
+    for sentence in sentences:
+        start_index = reconstructed_text.find(sentence)
+
+        if start_index != -1:
+            end_index = start_index + len(sentence)
+            sentence_index_mapping.append({"sentence": sentence, "start_index": start_index, "end_index": end_index})
+
+    return reconstructed_text, line_index_mapping, sentence_index_mapping
+
+
+def map_line_to_sentence(line_index_mapping, sentence_index_mapping):
+    mapping = []
+
+    for line_index in line_index_mapping:
+        line_mapping = None
+        max_overlap = -1
+
+        for sentence_index in sentence_index_mapping:
+            overlap_start = max(line_index["start_index"], sentence_index["start_index"])
+            overlap_end = min(line_index["end_index"], sentence_index["end_index"])
+            overlap = overlap_end - overlap_start + 1
+            line_coverage = overlap / (line_index["end_index"] - line_index["start_index"] + 1)
+
+            if line_coverage > 0.5 and overlap > max_overlap:
+                max_overlap = overlap
+                line_mapping = (line_index["line"], sentence_index["sentence"])
+
+        if line_mapping is None:
+            closest_sentence = None
+            min_distance = float("inf")
+            for sentence_index in sentence_index_mapping:
+                distance = min(abs(line_index["start_index"] - sentence_index["start_index"]),
+                               abs(line_index["end_index"] - sentence_index["end_index"]))
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_sentence = sentence_index["sentence"]
+            line_mapping = (line_index["line"], closest_sentence)
+
+        if line_mapping[1] is None:
+            for sentence_index in sentence_index_mapping:
+                if line_index["start_index"] >= sentence_index["start_index"] and line_index["end_index"] <= sentence_index["end_index"]:
+                    line_mapping = (line_index["line"], sentence_index["sentence"])
+                    break
+
+        mapping.append(line_mapping)
+
+    return mapping

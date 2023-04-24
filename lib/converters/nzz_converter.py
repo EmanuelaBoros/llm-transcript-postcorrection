@@ -5,7 +5,7 @@ import logging
 from tqdm import tqdm
 import json
 from const import Const
-from utils import clean_text, align_texts, reconstruct_sentences
+from utils import clean_text, align_texts
 
 
 def process_file(args,
@@ -81,17 +81,24 @@ def process_file(args,
                     aligned_sentences = align_texts(
                         gt_region_text, ocr_region_text, language=args.language)
 
-                import pdb;pdb.set_trace()
-                print(len(aligned_sentences))
-                gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines], [
-                                                                   gt_sentence for gt_sentence, _ in aligned_sentences])
-                print(len(gt_reconstructed_sentences))
-                ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines], [
-                                                                    ocr_sentence for _, ocr_sentence in aligned_sentences])
-                print('-'*10)
+                gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line for gt_line, _ in aligned_lines], \
+                    [gt_sentence for gt_sentence, _ in aligned_sentences], \
+                    [ocr_line for _, ocr_line in aligned_lines], \
+                    [ocr_sentence for _, ocr_sentence in aligned_sentences]
+
+                print(gt_lines, gt_sentences)
+
+                from utils import reconstruct_text, map_line_to_sentence
+                reconstructed_text, line_index_mapping, sentence_index_mapping = reconstruct_text(gt_lines, gt_sentences)
+                gt_reconstructed_sentences = map_line_to_sentence(line_index_mapping, sentence_index_mapping)
+                print(gt_reconstructed_sentences)
+
+                reconstructed_text, line_index_mapping, sentence_index_mapping = reconstruct_text(ocr_lines, ocr_sentences)
+                ocr_reconstructed_sentences = map_line_to_sentence(line_index_mapping, sentence_index_mapping)
+                print(ocr_reconstructed_sentences)
+                print('---'*10)
                 try:
-                    assert len(gt_reconstructed_sentences) == len(
-                        ocr_reconstructed_sentences)
+                    assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
                 except BaseException:
                     import pdb
                     pdb.set_trace()
@@ -100,17 +107,17 @@ def process_file(args,
 
                 # Append the output to a JSON Lines file
                 with open(output_file, "a") as outfile:
-                    for gt_reconstructed_sentence, gt_line, ocr_reconstructed_sentence, ocr_line in \
-                            zip(gt_reconstructed_sentences, [gt_line for gt_line, _ in aligned_lines],
-                                ocr_reconstructed_sentences, [ocr_line for _, ocr_line in aligned_lines]):
+                    for gt_element, ocr_element in zip(gt_reconstructed_sentences, ocr_reconstructed_sentences):
+                        (gt_line, gt_sentence) = gt_element
+                        (ocr_line, ocr_sentence) = ocr_element
                         json_line = json.dumps({Const.FILE: input_file,
                                                 Const.OCR: {Const.LINE: clean_text(ocr_line),
-                                                            Const.SENTENCE: clean_text(ocr_reconstructed_sentence),
+                                                            Const.SENTENCE: clean_text(ocr_sentence),
                                                             Const.REGION: clean_text(ocr_region_text)},
                                                 # TODO removed temporarily the
                                                 # region - too large
                                                 Const.GROUND: {Const.LINE: clean_text(gt_line),
-                                                               Const.SENTENCE: clean_text(gt_reconstructed_sentence),
+                                                               Const.SENTENCE: clean_text(gt_sentence),
                                                                Const.REGION: clean_text(gt_region_text)}
                                                 # TODO removed temporarily the
                                                 # region - too large
@@ -152,7 +159,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])
+    total_files = sum([len([file for file in files if file.endswith(".xml")]) for r, d, files in os.walk(args.input_dir)])
     progress_bar = tqdm(
         total=total_files,
         desc="Processing files",
