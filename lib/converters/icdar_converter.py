@@ -23,22 +23,22 @@ def load_metadada(args):
             metadata_path = path
 
     if metadata_path is None:
-        raise FileNotFoundError('Metadata was not found.')
+        print('Metadata was not found.')
+        args.metadata = None
+    else:
+        with open(metadata_path, 'r') as f:
+            metadata = f.readlines()
 
-    with open(metadata_path, 'r') as f:
-        metadata = f.readlines()
+        metadata = [line.strip().split(';') for line in metadata]
+        # Skip columns line: 'File;Date;Type;NbAlignedChar'
+        columns, metadata = metadata[0], metadata[1:]
 
-    metadata = [line.strip().split(';') for line in metadata]
-    # Skip columns line: 'File;Date;Type;NbAlignedChar'
-    columns, metadata = metadata[0], metadata[1:]
+        metadata = pd.DataFrame(metadata, columns=columns)
+        metadata['File'] = metadata['File'].apply(
+            lambda x: x.replace(
+                '\\', '/'))  # Replace Windows style file names
 
-    metadata = pd.DataFrame(metadata, columns=columns)
-    metadata['File'] = metadata['File'].apply(
-        lambda x: x.replace(
-            '\\', '/'))  # Replace Windows style file names
-
-    args.metadata = metadata
-    return metadata
+        args.metadata = metadata
 
 
 def lookup_metadata(args, input_file):
@@ -52,7 +52,10 @@ def process_file(args, input_file, output_file):
     with open(input_file, "r") as infile:
         data = infile.readlines()
 
-    file_metadata = lookup_metadata(args, input_file)
+    if args.metadata is not None:
+        file_metadata = lookup_metadata(args, input_file)
+    else:
+        file_metadata = {}
 
     # Extract OCR and GS sentences from the data list
     # [OCR_toInput] [OCR_aligned] [ GS_aligned]
@@ -118,7 +121,7 @@ if __name__ == "__main__":
         desc="Processing files",
         unit="file")
 
-    metadata = load_metadada(args)
+    load_metadada(args)
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
