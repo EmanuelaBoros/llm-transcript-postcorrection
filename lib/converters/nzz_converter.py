@@ -163,7 +163,7 @@ if __name__ == "__main__":
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
 
-    with open(os.path.join('/'.join(args.input_dir.split('/')[:-2]), 'test-set-filenames.txt'), 'r') as f:
+    with open(os.path.join(args.input_dir, 'test-set-filenames.txt'), 'r') as f:
         test_set_filenames = [x.strip() for x in f.readlines()]
 
     logging.info('Writing output {}'.format(output_file))
