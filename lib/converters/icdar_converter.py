@@ -64,7 +64,7 @@ def process_file(args, input_file, output_file):
 
     try:
         language = detect(gt_text)
-    finally:
+    except:
         language = 'en'
 
     try:
