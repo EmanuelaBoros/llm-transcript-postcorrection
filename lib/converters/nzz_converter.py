@@ -56,13 +56,11 @@ def process_file(args,
 
                     # Extract the TextEquiv content for the TextLine in the
                     # ground truth and prediction files
-                    gt_line_text = clean_text(
-                        gt_line.find('TextEquiv').text.strip())
+                    gt_line_text = clean_text(gt_line.findAll('TextEquiv')[-1].text.strip())
 
                     ocr_line_text = None
                     try:
-                        ocr_line_text = clean_text(ocr_line.findAll(
-                            'TextEquiv')[-1].text.strip())
+                        ocr_line_text = clean_text(ocr_line.findAll('TextEquiv')[-1].text.strip())
                         # ocr_line_text = ocr_line.find('TextEquiv').text.strip()
                     except BaseException as ex:
                         print(
@@ -71,6 +69,7 @@ def process_file(args,
                     # Print the extracted TextEquiv content for the TextLine in the ground truth and
                     # prediction files
                     if ocr_line_text:
+                        # import pdb;pdb.set_trace()
                         aligned_lines.append((gt_line_text, ocr_line_text))
 
                 if ocr_region_text:
@@ -82,11 +81,14 @@ def process_file(args,
                     aligned_sentences = align_texts(
                         gt_region_text, ocr_region_text, language=args.language)
 
+                import pdb;pdb.set_trace()
+                print(len(aligned_sentences))
                 gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines], [
                                                                    gt_sentence for gt_sentence, _ in aligned_sentences])
+                print(len(gt_reconstructed_sentences))
                 ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines], [
                                                                     ocr_sentence for _, ocr_sentence in aligned_sentences])
-
+                print('-'*10)
                 try:
                     assert len(gt_reconstructed_sentences) == len(
                         ocr_reconstructed_sentences)
@@ -94,6 +96,7 @@ def process_file(args,
                     import pdb
                     pdb.set_trace()
                 # Create the mapping list
+
 
                 # Append the output to a JSON Lines file
                 with open(output_file, "a") as outfile:
@@ -157,8 +160,9 @@ if __name__ == "__main__":
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(
-        args.input_dir.split('/')[-1]).lower())
+    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]).lower())
+    if len(output_file.strip()) == 0:
+        output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-2]).lower())
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
