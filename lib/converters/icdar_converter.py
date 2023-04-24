@@ -62,7 +62,10 @@ def process_file(args, input_file, output_file):
     gt_text = clean_text(data[2].replace('[ GS_aligned]', '').strip())
     ocr_text = clean_text(data[0].replace('[OCR_toInput]', '').strip())
 
-    language = detect(gt_text)
+    try:
+        language = detect(gt_text)
+    finally:
+        language = 'en'
 
     try:
         # Align the OCR and GS sentences
