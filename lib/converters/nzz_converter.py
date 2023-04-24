@@ -89,9 +89,9 @@ def process_file(args,
                 # print(gt_lines, gt_sentences)
 
                 from utils import map_lines_to_sentences
-                gt_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences)
+                gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences,
+                                                                                                 ocr_lines, ocr_sentences)
 
-                ocr_reconstructed_sentences = map_lines_to_sentences(ocr_lines, ocr_sentences)
                 try:
                     assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
                 except BaseException:

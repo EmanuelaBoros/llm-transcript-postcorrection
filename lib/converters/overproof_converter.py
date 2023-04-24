@@ -6,7 +6,7 @@ import json
 from langdetect import detect
 import re
 from const import Const
-from utils import clean_text, align_texts, reconstruct_sentences
+from utils import clean_text, align_texts
 
 
 def process_file(args,
@@ -53,10 +53,16 @@ def process_file(args,
                                         ocr_region_text,
                                         language=language)
 
-        gt_reconstructed_sentences = reconstruct_sentences([gt_line for gt_line, _ in aligned_lines],
-                                                           [gt_sentence for gt_sentence, _ in aligned_sentences])
-        ocr_reconstructed_sentences = reconstruct_sentences([ocr_line for _, ocr_line in aligned_lines],
-                                                            [ocr_sentence for _, ocr_sentence in aligned_sentences])
+        gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line for gt_line, _ in aligned_lines], \
+            [gt_sentence for gt_sentence, _ in aligned_sentences], \
+            [ocr_line for _, ocr_line in aligned_lines], \
+            [ocr_sentence for _, ocr_sentence in aligned_sentences]
+
+        # print(gt_lines, gt_sentences)
+
+        from utils import map_lines_to_sentences
+        gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences,
+                                                                                         ocr_lines, ocr_sentences)
 
         try:
             assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)

@@ -86,20 +86,23 @@ def reconstruct_text(txt_lines, sentences):
     return reconstructed_text, line_index_mapping, sentence_index_mapping
 
 
-def map_lines_to_sentences(lines, sentences):
+def map_lines_to_sentences(lines, sentences, ocr_lines, ocr_sentences):
     line_index_mapping = {}
     sentence_index_mapping = {}
     result = []
+    ocr_result = []
     for i, line in enumerate(lines):
         if i not in line_index_mapping:
             for j, sentence in enumerate(sentences):
                 if line in sentence:
                     sentence_index_mapping[j] = sentence
                     result.append((line, sentence))
+                    ocr_result.append((ocr_lines[i], ocr_sentences[j]))
                     break
                 elif sentence in line:
                     sentence_index_mapping[j] = sentence
                     result.append((line, sentence))
+                    ocr_result.append((ocr_lines[i], ocr_sentences[j]))
                     break
 
     for i, sentence in enumerate(sentences):
@@ -109,15 +112,18 @@ def map_lines_to_sentences(lines, sentences):
             if sentence in line:
                 line_index_mapping[j] = sentence
                 result.append((line, sentence))
+                ocr_result.append((ocr_lines[j], ocr_sentences[i]))
                 start = len(line)
             elif start > 0 and line in sentence[start:]:
                 line_index_mapping[j] = sentence
                 result.append((line, sentence))
+                ocr_result.append((ocr_lines[j], ocr_sentences[i]))
                 start = 0
             elif sentence in line:
                 line_index_mapping[j] = sentence
                 result.append((line, sentence))
+                ocr_result.append((ocr_lines[j], ocr_sentences[i]))
 
-    return result
+    return result, ocr_result
 
 
