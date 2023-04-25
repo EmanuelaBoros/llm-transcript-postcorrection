@@ -118,7 +118,8 @@ class HFPrompt(Prompt):
                 self.model.generate(
                     inputs["input_ids"],
                     temperature=options['temperature'],
-                    max_length=options['max_tokens'])[0])
+                    max_length=options['max_tokens']
+                )[0])
 
         elif search == 'beam':
             # Beam Search
