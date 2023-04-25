@@ -4,7 +4,6 @@ import logging
 from tqdm import tqdm
 import json
 from langdetect import detect
-import re
 from const import Const
 from utils import clean_text, align_texts
 
