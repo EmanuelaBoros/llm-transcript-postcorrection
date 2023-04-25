@@ -17,7 +17,6 @@ def process_file(args,
     # Parse the ground truth file
     with open(input_file, 'r') as f:
         text = f.read()
-
     articles = text.split('*$*OVERPROOF*$*')
 
     aligned_texts = []
@@ -43,9 +42,9 @@ def process_file(args,
         # import pdb;pdb.set_trace()
         # The region in OVERPROOF is the article level
         gt_region_text = ' '.join(
-            [gt_line for gt_line, _ in aligned_lines]).strip()
+            [gt_line[0] for gt_line in aligned_lines]).strip()
         ocr_region_text = ' '.join(
-            [ocr_line for _, ocr_line in aligned_lines]).strip()
+            [ocr_line[-1] for ocr_line in aligned_lines]).strip()
         aligned_texts.append((gt_region_text, ocr_region_text, article_id))
 
         # Split in sentences and align
@@ -53,9 +52,9 @@ def process_file(args,
                                         ocr_region_text,
                                         language=language)
 
-        gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line for gt_line, _ in aligned_lines], \
+        gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line[0] for gt_line in aligned_lines], \
             [gt_sentence for gt_sentence, _ in aligned_sentences], \
-            [ocr_line for _, ocr_line in aligned_lines], \
+            [ocr_line[-1] for ocr_line in aligned_lines], \
             [ocr_sentence for _, ocr_sentence in aligned_sentences]
 
         # print(gt_lines, gt_sentences)
@@ -120,7 +119,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])
+    total_files = sum([len([file for file in files if file.endswith(".txt")]) for r, d, files in os.walk(args.input_dir)])
     progress_bar = tqdm(
         total=total_files,
         desc="Processing files",

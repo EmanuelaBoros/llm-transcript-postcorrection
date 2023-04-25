@@ -5,15 +5,11 @@ from tqdm import tqdm
 import logging
 from langdetect import detect
 from utils import clean_text, align_texts
-from functools import lru_cache
 from const import Const
 import glob
 import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
-
-
-# @lru_cache(maxsize=64)
 
 
 def load_metadada(args):
@@ -52,6 +48,8 @@ def process_file(args, input_file, output_file):
     with open(input_file, "r") as infile:
         data = infile.readlines()
 
+    print(input_file)
+
     if args.metadata is not None:
         file_metadata = lookup_metadata(args, input_file)
     else:
@@ -80,10 +78,10 @@ def process_file(args, input_file, output_file):
             json_line = json.dumps({Const.FILE: input_file,
                                     Const.OCR: {Const.LINE: Const.NONE,
                                                 Const.SENTENCE: ocr_sentence,
-                                                Const.REGION: Const.NONE},  # TODO removed temporarily the region - too large
+                                                Const.REGION: ocr_text},  # TODO removed temporarily the region - too large
                                     Const.GROUND: {Const.LINE: Const.NONE,
                                                    Const.SENTENCE: gs_sentence,
-                                                   Const.REGION: Const.NONE}  # TODO removed temporarily the region - too large
+                                                   Const.REGION: gt_text}  # TODO removed temporarily the region - too large
                                     } | file_metadata)
 
             outfile.write(json_line + "\n")
