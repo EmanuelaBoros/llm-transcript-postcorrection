@@ -7,4 +7,5 @@ class Const:
     LINE = 'line'
     SENTENCE = 'sentence'
     FILE = 'filename'
+    DATASET = 'dataset_name'
     NONE = None

@@ -43,7 +43,7 @@ def lookup_metadata(args, input_file):
     return file_metadata.to_dict('records')[0]
 
 
-def process_file(args, input_file, output_file):
+def process_file(args, input_file, output_file, dataset_name):
     # Read the input file
     with open(input_file, "r") as infile:
         data = infile.readlines()
@@ -76,6 +76,7 @@ def process_file(args, input_file, output_file):
     with open(output_file, "a") as outfile:
         for ocr_sentence, gs_sentence in aligned_sentences:
             json_line = json.dumps({Const.FILE: input_file,
+                                    Const.DATASET: dataset_name,
                                     Const.OCR: {Const.LINE: Const.NONE,
                                                 Const.SENTENCE: ocr_sentence,
                                                 Const.REGION: ocr_text},  # TODO removed temporarily the region - too large
@@ -126,8 +127,9 @@ if __name__ == "__main__":
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
+    dataset_name = args.input_dir.split('/')[-1]
     output_file = os.path.join(args.output_dir,
-                               '{}.jsonl'.format(args.input_dir.split('/')[-1]))
+                               '{}.jsonl'.format(dataset_name))
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
@@ -143,6 +145,7 @@ if __name__ == "__main__":
                 process_file(
                     args=args,
                     input_file=input_file,
-                    output_file=output_file)
+                    output_file=output_file,
+                    dataset_name=dataset_name)
                 progress_bar.update(1)
     progress_bar.close()

@@ -12,7 +12,7 @@ def process_file(args,
                  input_file: str,
                  ocr_file: str,
                  output_file: str,
-                 extraction_type: str = 'region') -> None:
+                 dataset_name: str) -> None:
 
     # Parse the ground truth file
     with open(input_file, 'r') as f:
@@ -106,6 +106,7 @@ def process_file(args,
                         (gt_line, gt_sentence) = gt_element
                         (ocr_line, ocr_sentence) = ocr_element
                         json_line = json.dumps({Const.FILE: input_file,
+                                                Const.DATASET: dataset_name,
                                                 Const.OCR: {Const.LINE: clean_text(ocr_line),
                                                             Const.SENTENCE: clean_text(ocr_sentence),
                                                             Const.REGION: clean_text(ocr_region_text)},
@@ -162,9 +163,11 @@ if __name__ == "__main__":
 
     output_dir_path = args.input_dir.replace('original', 'converted')
 
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-1]).lower())
+    dataset_name = args.input_dir.split('/')[-1]
+    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(dataset_name).lower())
     if len(output_file.strip()) == 0:
-        output_file = os.path.join(args.output_dir, '{}.jsonl'.format(args.input_dir.split('/')[-2]).lower())
+        dataset_name = args.input_dir.split('/')[-2]
+        output_file = os.path.join(args.output_dir, '{}.jsonl'.format(dataset_name).lower())
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
@@ -186,7 +189,8 @@ if __name__ == "__main__":
                         args=args,
                         input_file=input_file,
                         ocr_file=ocr_file,
-                        output_file=output_file)
+                        output_file=output_file,
+                        dataset_name=dataset_name)
                     progress_bar.update(1)
                 else:
                     if os.path.exists(os.path.join(root, file)):
