@@ -63,7 +63,7 @@ Costs GPT can be seen at our [OpenAI group](https://platform.openai.com/account/
 ## Inference
 
 ```python
-python main.py --input_dir ../data/datasets \
+python main.py --input_dir ../data/datasets/converted \
                --output_dir ../data/outputs \
                --config_file ../data/config.yml \
                --prompt_dir ../data/prompts \
