@@ -4,7 +4,7 @@ import os
 import asyncio
 import fire
 import argparse
-from tqdm import trange, tqdm
+from tqdm import tqdm
 import importlib
 import jsonlines
 import logging
@@ -100,6 +100,14 @@ def generate(
                         'Predictions for {} are saved in {}'.format(
                             input_file, output_file))
 
+                    with open(input_file, 'r') as g:
+                        total_files = len(g.readlines())
+
+                    progress_bar = tqdm(
+                        total=total_files,
+                        desc="Processing files",
+                        unit="file")
+
                     with jsonlines.open(output_file, 'w') as f:
 
                         with jsonlines.open(input_file, 'r') as g:
@@ -118,9 +126,7 @@ def generate(
 
                                         if 'temperatures' in experiment_details:
                                             loop = asyncio.get_event_loop()
-                                            for temperature in tqdm(
-                                                experiment_details["temperatures"], total=len(
-                                                    experiment_details["temperatures"])):
+                                            for temperature in experiment_details["temperatures"]:
                                                 data[Const.PREDICTION].update(
                                                     {"temperature": temperature})
 
@@ -137,7 +143,7 @@ def generate(
                                                 n_str = "samples" if n > 1 else "sample"
 
                                                 try:
-                                                    for _ in trange(n):
+                                                    for _ in range(n):
 
                                                         result = instance.prediction(
                                                             data[Const.PREDICTION][Const.PROMPT], options)
@@ -166,7 +172,7 @@ def generate(
                                             # logger.info(
                                             # f"Writing {n} {n_str} to {output_file}.")
                                             try:
-                                                for _ in trange(n):
+                                                for _ in range(n):
                                                     result = instance.prediction(
                                                         data[Const.PREDICTION][Const.PROMPT], options)
                                                     data[Const.PREDICTION].update({TEXT_LEVEL: result})
@@ -175,10 +181,14 @@ def generate(
                                                     data = json_line | data
                                                     f.write(data)
                                                 loop.close()
+
+                                                
                                             except Exception as ex:
                                                 logging.warning(f'Exception: {ex} {input_file}')
 
                                     data[Const.PREDICTION].update({Const.PROMPT: None})
+                                progress_bar.update(1)
+                    progress_bar.close()
 
 
 if __name__ == "__main__":
