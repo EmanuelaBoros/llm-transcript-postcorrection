@@ -128,10 +128,9 @@ class HFPrompt(Prompt):
                     inputs["input_ids"],
                     max_length=options['max_tokens'],
                     num_beams=2,
-                    temperature=options['temperature'],
+                    # temperature=options['temperature'],
                     no_repeat_ngram_size=2,
                     early_stopping=True)[0])
-
         else:
             # in case no specific request, apply the best one: top-k
             # Sampling Top-k + Top-p
@@ -150,7 +149,7 @@ class HFPrompt(Prompt):
                     input_ids=inputs["input_ids"],
                     max_length=options['max_tokens'],
                     do_sample=True,
-                    temperature=options['temperature'],
+                    # temperature=options['temperature'],
                     top_k=50,
                     top_p=0.9)[0])
 
