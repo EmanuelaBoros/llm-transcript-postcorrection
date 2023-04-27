@@ -4,11 +4,16 @@ import logging
 from tqdm import tqdm
 import json
 from langdetect import detect
+# Add the main directory to the sys.path list
+import sys
+main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(main_dir)
 from const import Const
+
 from utils import clean_text, align_texts
 
 
-def process_file(args,
+def process_file(
                  input_file: str,
                  output_file: str,
                  dataset_name: str) -> None:
@@ -143,7 +148,6 @@ if __name__ == "__main__":
                 logging.info('Analyzing file {}'.format(input_file))
 
                 process_file(
-                    args=args,
                     input_file=input_file,
                     output_file=output_file,
                     dataset_name=dataset_name)

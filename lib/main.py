@@ -9,7 +9,6 @@ import importlib
 import jsonlines
 import logging
 from const import Const
-
 logger = logging.getLogger("gpt-experiments")
 logger.setLevel(logging.INFO)
 

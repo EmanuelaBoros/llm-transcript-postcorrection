@@ -4,8 +4,11 @@ import argparse
 from tqdm import tqdm
 import logging
 from langdetect import detect
-from utils import clean_text, align_texts
+import sys
+main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(main_dir)
 from const import Const
+from utils import clean_text, align_texts
 import glob
 import pandas as pd
 import warnings

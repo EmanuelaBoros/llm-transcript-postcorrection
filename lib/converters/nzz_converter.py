@@ -4,6 +4,9 @@ import argparse
 import logging
 from tqdm import tqdm
 import json
+import sys
+main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+sys.path.append(main_dir)
 from const import Const
 from utils import clean_text, align_texts
 
