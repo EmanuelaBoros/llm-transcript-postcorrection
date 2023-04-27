@@ -120,11 +120,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])
-    progress_bar = tqdm(
-        total=total_files,
-        desc="Processing files",
-        unit="file")
+
 
     load_metadada(args)
 
@@ -137,18 +133,36 @@ if __name__ == "__main__":
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
 
+    import glob
+
+
+
+    files = []
     logging.info('Writing output {}'.format(output_file))
-    for root, dirs, files in os.walk(args.input_dir):
-        for file in files:
-            if file.endswith(".txt") and 'readme' not in file:
-                input_file = os.path.join(root, file)
+    for input_file in glob.glob(f"{args.input_dir}/**/*", recursive=True):
+        if not os.path.isdir(input_file):
+            # do something with the file
+            if input_file.endswith(".txt") and 'readme' not in input_file:
 
                 logging.info('Analyzing file {}'.format(input_file))
+                if os.path.getsize(input_file) / 1024 < 100:
+                    print(input_file, os.path.getsize(input_file) / 1024)
+                    files.append(input_file)
 
-                process_file(
-                    args=args,
-                    input_file=input_file,
-                    output_file=output_file,
-                    dataset_name=dataset_name)
-                progress_bar.update(1)
+    # total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])
+    total_files = len(files)
+    progress_bar = tqdm(
+        total=total_files,
+        desc="Processing files",
+        unit="file")
+
+
+    print(f'There are {len(files)} files')
+    for input_file in files:
+        process_file(
+            args=args,
+            input_file=input_file,
+            output_file=output_file,
+            dataset_name=dataset_name)
+        progress_bar.update(1)
     progress_bar.close()
