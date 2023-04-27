@@ -35,19 +35,32 @@ class GPTPrompt(Prompt):
         if not options:
             options = self.options
 
-        max_tokens = len(self.tokenizer(prompt, return_tensors="pt").to(self.device))
+        # max_tokens = len(self.tokenizer(prompt, return_tensors="pt").to(self.device))
+
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+
+        options['max_tokens'] = inputs['input_ids'].shape[1] * 2 + 1
+        # print(options['max_tokens'])
+        if 'davinci' in options['engine']:
+            max_model_tokens = 2049
+        else:
+            max_model_tokens = 1024
+        if options['max_tokens'] > max_model_tokens:
+            inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
+            options['max_tokens'] = max_model_tokens
+
+            prompt = self.tokenizer.decode(*inputs['input_ids'])
+        import pdb;pdb.set_trace()
         try:
-            result = openai.Completion.create(
-                prompt=prompt, **options)['choices'][0]['text']
-        except BaseException:
+            result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
+        except BaseException as ex:
+            print(f'Error: {ex}')
             # {
             #     "model": "text-davinci-edit-001",
             #     "input": "What day of the wek is it?",
             #     "instruction": "Fix the spelling mistakes",
             # }
             # Chat endpoints do not have the same engine
-
-            options['max_tokens'] = max_tokens
 
             options.update({'model': options['engine']})
             options.pop('engine')
@@ -118,12 +131,12 @@ class HFPrompt(Prompt):
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
-        options['max_tokens'] = inputs['input_ids'].shape[1] + 1
+        options['max_tokens'] = inputs['input_ids'].shape[1] * 2 + 1
         # print(options['max_tokens'])
         max_model_tokens = self.model.config.max_position_embeddings
         if options['max_tokens'] > max_model_tokens:
+            inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
             options['max_tokens'] = max_model_tokens
-            inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens]
 
         # print(options['max_tokens'])
         # print('--'*100)
@@ -148,7 +161,6 @@ class HFPrompt(Prompt):
                     max_length=options['max_tokens'],
                     pad_token_id=self.tokenizer.eos_token_id,
                     num_beams=2,
-                    # temperature=options['temperature'],
                     no_repeat_ngram_size=2,
                     early_stopping=True)[0])
         else:
@@ -164,15 +176,7 @@ class HFPrompt(Prompt):
             #         max_new_tokens=max_new_tokens,
             #     )
 
-            result = self.tokenizer.decode(
-                self.model.generate(
-                    input_ids=inputs["input_ids"],
-                    max_length=options['max_tokens'],
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    do_sample=True,
-                    # temperature=options['temperature'],
-                    top_k=50,
-                    top_p=0.9)[0])
+            result = self.tokenizer.decode(self.model.generate(input_ids=inputs["input_ids"], max_length=options['max_tokens'], pad_token_id=self.tokenizer.eos_token_id, do_sample=True, top_k=50, top_p=0.9)[0])
 
         # OPT adds the prompt in the response, so we are removing it
         last_comment_in_prompt = prompt.split('\n')[-1]

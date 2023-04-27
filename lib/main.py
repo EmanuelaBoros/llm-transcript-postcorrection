@@ -40,6 +40,15 @@ def generate(
         config = yaml.safe_load(f)
 
     openai.api_key = config['SECRET_KEY']
+    if 'prompt' in config:
+        prompt_path = os.path.join(prompt_dir, config['prompt'])
+        # If prompt is a file path, load the file as the prompt.
+        if os.path.exists(prompt_path):
+            logger.info(f"Loading prompt from {prompt_path}.")
+            with open(prompt_path, "r", encoding="utf-8") as f:
+                prompt = f.read()
+        else:
+            logger.info(f"Model prompt missing: {prompt_path}.")
 
     for model in config['models']:
 
@@ -50,19 +59,11 @@ def generate(
         experiment_details = get_dict(experiment_details)
 
         model_class = experiment_details['class']
-        prompt_path = os.path.join(prompt_dir, experiment_details['prompt'])
-
-        # If prompt is a file path, load the file as the prompt.
-        if os.path.exists(prompt_path):
-            logger.info(f"Loading prompt from {prompt_path}.")
-            with open(prompt_path, "r", encoding="utf-8") as f:
-                prompt = f.read()
-        else:
-            logger.info(f"Model prompt missing: {prompt_path}.")
+        # prompt_path = os.path.join(prompt_dir, experiment_details['prompt'])
 
         results_dir = os.path.join(
             output_dir,
-            experiment_details['prompt'].replace(
+            config['prompt'].replace(
                 '.txt',
                 ''))
         if not os.path.exists(results_dir):
@@ -119,14 +120,13 @@ def generate(
                                     if text not in already_done:
 
                                         if text is not None:
-                                            data[Const.PREDICTION].update({Const.PROMPT: prompt.replace('{{TEXT}}', text)})
+                                            # print(TEXT_LEVEL, text[:20])
+                                            data[Const.PREDICTION][Const.PROMPT] =  prompt.replace('{{TEXT}}', text)
                                             # logger.info('--Text: {}'.format(data[Const.PREDICTION][Const.PROMPT]))
 
-
-                                            loop = asyncio.get_event_loop()
+                                            # loop = asyncio.get_event_loop()
                                             n = experiment_details["num_generate"]
                                             n_str = "samples" if n > 1 else "sample"
-
 
                                             options = {
                                                 'engine': model_name,
@@ -136,21 +136,20 @@ def generate(
                                                 'presence_penalty': 0
                                                 # 'max_tokens': max_tokens
                                             }
-                                            # logger.info(
-                                            # f"Writing {n} {n_str} to {output_file}.")
-                                            # try:
-                                                # for _ in range(n):
+
                                             result = instance.prediction(
                                                 data[Const.PREDICTION][Const.PROMPT], options)
-                                            data[Const.PREDICTION].update({TEXT_LEVEL: result})
+
+                                            data[Const.PREDICTION][TEXT_LEVEL] = result
                                             # data[Const.PREDICTION].update({"num_generate": idx}) # TODO: for now, just one run
 
                                             data = json_line | data
                                             f.write(data)
+                                            # f.flush()
 
                                             already_done[text] = result
 
-                                            loop.close()
+                                            # loop.close()
 
                                             # except Exception as ex:
                                             #     logging.warning(f'Exception: {ex} {input_file}')
