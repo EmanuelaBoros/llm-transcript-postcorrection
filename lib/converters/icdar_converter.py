@@ -139,13 +139,13 @@ if __name__ == "__main__":
             if input_file.endswith(".txt") and 'readme' not in input_file:
 
                 logging.info('Analyzing file {}'.format(input_file))
-                if os.path.getsize(input_file) / 1024 <= 50:
+                if os.path.getsize(input_file) / 1024 <= 40:
                     # print(input_file, os.path.getsize(input_file) / 1024)
                     files.append(input_file)
                     langs.append(input_file.split('/')[-3])
 
     if len(files) > 200:
-        files_keep, files_removed, _, _ = train_test_split(files, langs, test_size=0.93, random_state=42)
+        files_keep, files_removed, _, _ = train_test_split(files, langs, test_size=0.96, random_state=42)
         print(len(files_keep), len(files_removed))
 
     # total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])

@@ -142,6 +142,7 @@ if __name__ == "__main__":
     logging.info('Writing output {}'.format(output_file))
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
+            print(file)
             if file.endswith(".txt"):
                 input_file = os.path.join(root, file)
 
