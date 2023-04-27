@@ -8,4 +8,5 @@ class Const:
     DATASET = 'dataset_name'
     PREDICTION = 'prediction'
     PROMPT = 'prompt'
+    LANGUAGE = 'language'
     NONE = None

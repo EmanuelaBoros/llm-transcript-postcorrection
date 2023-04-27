@@ -13,7 +13,7 @@ import glob
 import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
-
+from sklearn.model_selection import train_test_split
 
 def load_metadada(args):
     metadata_path = None
@@ -51,8 +51,6 @@ def process_file(args, input_file, output_file, dataset_name):
     with open(input_file, "r") as infile:
         data = infile.readlines()
 
-    print(input_file)
-
     if args.metadata is not None:
         file_metadata = lookup_metadata(args, input_file)
     else:
@@ -63,10 +61,7 @@ def process_file(args, input_file, output_file, dataset_name):
     gt_text = clean_text(data[2].replace('[ GS_aligned]', '').strip())
     ocr_text = clean_text(data[0].replace('[OCR_toInput]', '').strip())
 
-    try:
-        language = detect(gt_text)
-    except:
-        language = 'en'
+    language = input_file.split('/')[-3].lower()
 
     try:
         # Align the OCR and GS sentences
@@ -78,7 +73,8 @@ def process_file(args, input_file, output_file, dataset_name):
     # Write the output to a JSON Lines file
     with open(output_file, "a") as outfile:
         for ocr_sentence, gs_sentence in aligned_sentences:
-            json_line = json.dumps({Const.FILE: input_file,
+            json_line = json.dumps({Const.LANGUAGE: input_file.split('/')[-3].lower(),
+                                    Const.FILE: input_file,
                                     Const.DATASET: dataset_name,
                                     Const.OCR: {Const.LINE: Const.NONE,
                                                 Const.SENTENCE: ocr_sentence,
@@ -135,9 +131,7 @@ if __name__ == "__main__":
 
     import glob
 
-
-
-    files = []
+    files, langs = [], []
     logging.info('Writing output {}'.format(output_file))
     for input_file in glob.glob(f"{args.input_dir}/**/*", recursive=True):
         if not os.path.isdir(input_file):
@@ -145,9 +139,14 @@ if __name__ == "__main__":
             if input_file.endswith(".txt") and 'readme' not in input_file:
 
                 logging.info('Analyzing file {}'.format(input_file))
-                if os.path.getsize(input_file) / 1024 < 100:
-                    print(input_file, os.path.getsize(input_file) / 1024)
+                if os.path.getsize(input_file) / 1024 <= 50:
+                    # print(input_file, os.path.getsize(input_file) / 1024)
                     files.append(input_file)
+                    langs.append(input_file.split('/')[-3])
+
+    if len(files) > 200:
+        files_keep, files_removed, _, _ = train_test_split(files, langs, test_size=0.93, random_state=42)
+        print(len(files_keep), len(files_removed))
 
     # total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])
     total_files = len(files)
@@ -155,7 +154,6 @@ if __name__ == "__main__":
         total=total_files,
         desc="Processing files",
         unit="file")
-
 
     print(f'There are {len(files)} files')
     for input_file in files:
