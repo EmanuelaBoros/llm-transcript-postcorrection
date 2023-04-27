@@ -20,7 +20,7 @@ class GPTPrompt(Prompt):
 
     def __init__(self, api_key=None, model='text-davinci-003', device='cpu'):
         openai.api_key = api_key
-
+        self.device = device
         self.options = {
             'engine': model,
             'temperature': 0.7,
@@ -29,11 +29,13 @@ class GPTPrompt(Prompt):
             'presence_penalty': 0,
             'max_tokens': 512
         }
+        self.tokenizer = AutoTokenizer.from_pretrained('gpt2')
 
     def prediction(self, prompt, options=None):
         if not options:
             options = self.options
 
+        max_tokens = len(self.tokenizer(prompt, return_tensors="pt").to(self.device))
         try:
             result = openai.Completion.create(
                 prompt=prompt, **options)['choices'][0]['text']
@@ -44,6 +46,9 @@ class GPTPrompt(Prompt):
             #     "instruction": "Fix the spelling mistakes",
             # }
             # Chat endpoints do not have the same engine
+
+            options['max_tokens'] = max_tokens
+
             options.update({'model': options['engine']})
             options.pop('engine')
             result = openai.ChatCompletion.create(
@@ -59,9 +64,10 @@ class HFPrompt(Prompt):
 
     def __init__(self, api_key=None, model="bigscience/bloom", device='cpu'):
 
+        self.device = device
         if 'llama' in model.lower():
 
-            self. tokenizer = LlamaTokenizer.from_pretrained(model)
+            self.tokenizer = LlamaTokenizer.from_pretrained(model)
             self.model = LlamaForCausalLM.from_pretrained(model)
 
         elif "alpaca" in model.lower():
@@ -110,13 +116,26 @@ class HFPrompt(Prompt):
 
     def prediction(self, prompt, options=None, search='topk'):
 
-        inputs = self.tokenizer(prompt, return_tensors="pt")
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+
+        options['max_tokens'] = inputs['input_ids'].shape[1] + 1
+        # print(options['max_tokens'])
+        max_model_tokens = self.model.config.max_position_embeddings
+        if options['max_tokens'] > max_model_tokens:
+            options['max_tokens'] = max_model_tokens
+            inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens]
+
+        # print(options['max_tokens'])
+        # print('--'*100)
+        # # import pdb;
+        # # pdb.set_trace()
 
         if search == 'greedy':
             # Greedy Search
             result = self.tokenizer.decode(
                 self.model.generate(
                     inputs["input_ids"],
+                    pad_token_id=self.tokenizer.eos_token_id,
                     temperature=options['temperature'],
                     max_length=options['max_tokens']
                 )[0])
@@ -127,6 +146,7 @@ class HFPrompt(Prompt):
                 self.model.generate(
                     inputs["input_ids"],
                     max_length=options['max_tokens'],
+                    pad_token_id=self.tokenizer.eos_token_id,
                     num_beams=2,
                     # temperature=options['temperature'],
                     no_repeat_ngram_size=2,
@@ -148,6 +168,7 @@ class HFPrompt(Prompt):
                 self.model.generate(
                     input_ids=inputs["input_ids"],
                     max_length=options['max_tokens'],
+                    pad_token_id=self.tokenizer.eos_token_id,
                     do_sample=True,
                     # temperature=options['temperature'],
                     top_k=50,

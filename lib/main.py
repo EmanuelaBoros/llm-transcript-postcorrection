@@ -121,71 +121,39 @@ def generate(
                                         if text is not None:
                                             data[Const.PREDICTION].update({Const.PROMPT: prompt.replace('{{TEXT}}', text)})
                                             # logger.info('--Text: {}'.format(data[Const.PREDICTION][Const.PROMPT]))
-                                            max_tokens = len(prompt.replace('{{TEXT}}', text).split(' ')) * 2 + 1
 
-                                            # if 'temperatures' in experiment_details:
-                                            #     loop = asyncio.get_event_loop()
-                                            #     for temperature in experiment_details["temperatures"]:
-                                            #         data[Const.PREDICTION].update(
-                                            #             {"temperature": temperature})
-                                            #
-                                            #         options = {
-                                            #             'engine': model_name,
-                                            #             'temperature': temperature,
-                                            #             'top_p': 1.0,
-                                            #             'frequency_penalty': 0,
-                                            #             'presence_penalty': 0,
-                                            #             'max_tokens': max_tokens
-                                            #         }
-                                            #
-                                            #         n = experiment_details["num_generate"] if temperature != 0.0 else 1
-                                            #         n_str = "samples" if n > 1 else "sample"
-                                            #
-                                            #         try:
-                                            #             for _ in range(n):
-                                            #
-                                            #                 result = instance.prediction(
-                                            #                     data[Const.PREDICTION][Const.PROMPT], options)
-                                            #                 data[Const.PREDICTION].update({TEXT_LEVEL: result})
-                                            #                 # data[Const.PREDICTION].update({"num_generate": idx}) # TODO: for now, just one run
-                                            #
-                                            #                 data = json_line | data
-                                            #                 f.write(data)
-                                            #
-                                            #             loop.close()
-                                            #         except Exception as ex:
-                                            #             logging.warning(f'Exception: {ex} {input_file}')
-                                            # else:
-                                            # Simple prediction
+
                                             loop = asyncio.get_event_loop()
                                             n = experiment_details["num_generate"]
                                             n_str = "samples" if n > 1 else "sample"
+
+
                                             options = {
                                                 'engine': model_name,
                                                 # 'temperature': 0.5,
                                                 'top_p': 1.0,
                                                 'frequency_penalty': 0,
-                                                'presence_penalty': 0,
-                                                'max_tokens': max_tokens
+                                                'presence_penalty': 0
+                                                # 'max_tokens': max_tokens
                                             }
                                             # logger.info(
                                             # f"Writing {n} {n_str} to {output_file}.")
-                                            try:
+                                            # try:
                                                 # for _ in range(n):
-                                                result = instance.prediction(
-                                                    data[Const.PREDICTION][Const.PROMPT], options)
-                                                data[Const.PREDICTION].update({TEXT_LEVEL: result})
-                                                # data[Const.PREDICTION].update({"num_generate": idx}) # TODO: for now, just one run
+                                            result = instance.prediction(
+                                                data[Const.PREDICTION][Const.PROMPT], options)
+                                            data[Const.PREDICTION].update({TEXT_LEVEL: result})
+                                            # data[Const.PREDICTION].update({"num_generate": idx}) # TODO: for now, just one run
 
-                                                data = json_line | data
-                                                f.write(data)
+                                            data = json_line | data
+                                            f.write(data)
 
-                                                already_done[text] = result
+                                            already_done[text] = result
 
-                                                loop.close()
+                                            loop.close()
 
-                                            except Exception as ex:
-                                                logging.warning(f'Exception: {ex} {input_file}')
+                                            # except Exception as ex:
+                                            #     logging.warning(f'Exception: {ex} {input_file}')
                                     else:
                                         data[Const.PREDICTION].update({TEXT_LEVEL: already_done[text]})
 
