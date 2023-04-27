@@ -134,7 +134,7 @@ if __name__ == "__main__":
         type=str,
         help='Path to ground truth folder')
     parser.add_argument('--ocr_dir', type=str, help='Path to OCRed folder',
-                        default='../../data/datasets/ocr/original/impresso-nzz/xml/ABBYY_FineReader_Server11')
+                        default='../../data/datasets/ocr/original/impresso-nzz/xml/ABBYY_FineReader_XIX')
     parser.add_argument(
         "--output_dir",
         help="The path to the output directory where JSON Lines files will be created.")
@@ -185,7 +185,7 @@ if __name__ == "__main__":
                 if file in test_set_filenames:
                     input_file = os.path.join(root, file)
                     ocr_file = os.path.join(args.ocr_dir, file)
-
+                    print(input_file)
                     logging.info('Analyzing file {}'.format(input_file))
 
                     process_file(
