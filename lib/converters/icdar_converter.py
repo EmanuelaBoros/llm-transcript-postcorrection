@@ -145,7 +145,12 @@ if __name__ == "__main__":
                     langs.append(input_file.split('/')[-3])
 
     if len(files) > 200:
-        files_keep, files_removed, _, _ = train_test_split(files, langs, test_size=0.90, random_state=42)
+        files_keep, files_removed, _, _ = train_test_split(files, langs, test_size=0.986, random_state=43)
+        print(len(files_keep), len(files_removed))
+        files = files_keep
+    else:
+        # icdar 2017
+        files_keep, files_removed, _, _ = train_test_split(files, langs, test_size=0.85, random_state=43)
         print(len(files_keep), len(files_removed))
         files = files_keep
     # total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])

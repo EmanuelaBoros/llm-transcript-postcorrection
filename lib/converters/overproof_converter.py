@@ -9,7 +9,7 @@ import sys
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(main_dir)
 from const import Const
-
+from sklearn.model_selection import train_test_split
 from utils import clean_text, align_texts
 
 
@@ -27,7 +27,9 @@ def process_file(
 
     language = detect(text)
 
-    for article in articles:
+    articles_keep, articles_removed, _, _ = train_test_split(articles, articles, test_size=0.8, random_state=43)
+
+    for article in articles_keep:
         if not article.strip():
             continue
         lines = article.split('\n')

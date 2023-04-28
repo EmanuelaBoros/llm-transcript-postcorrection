@@ -45,15 +45,17 @@ class GPTPrompt(Prompt):
             max_model_tokens = 2049
         else:
             max_model_tokens = 1024
+
         if options['max_tokens'] > max_model_tokens:
             inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
             options['max_tokens'] = max_model_tokens
 
             prompt = self.tokenizer.decode(*inputs['input_ids'])
-        import pdb;pdb.set_trace()
+
         try:
             result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
         except BaseException as ex:
+            import pdb;pdb.set_trace()
             print(f'Error: {ex}')
             # {
             #     "model": "text-davinci-edit-001",
