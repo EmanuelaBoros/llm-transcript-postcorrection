@@ -1,6 +1,6 @@
-SECRET_KEY:
+SECRET_KEY: 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
 
-prompt: prompt_complex_02.txt
+prompt: prompt_basic_01.txt
 # Lists for loops
 models:
 #  - gpt-4:
@@ -27,18 +27,18 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-#  - davinci:
-#      - class: GPTPrompt
-#      - prompt: prompt_complex_02.txt
-#      - num_generate: 1
-#      - temperatures:
-#          - 0.1
-#          - 0.5
-#          - 0.9
-#          - 1.0
-#          - 1.5
-#          - 1.9
-#          - 2.0
+  - davinci:
+      - class: GPTPrompt
+      - prompt: prompt_complex_02.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
+          - 0.9
+          - 1.0
+          - 1.5
+          - 1.9
+          - 2.0
   - gpt2:
       - class: HFPrompt
       - prompt: prompt_complex_02.txt
