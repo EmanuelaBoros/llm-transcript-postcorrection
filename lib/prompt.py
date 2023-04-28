@@ -39,18 +39,19 @@ class GPTPrompt(Prompt):
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
-        options['max_tokens'] = inputs['input_ids'].shape[1] * 2 + 1
         # print(options['max_tokens'])
         if 'davinci' in options['engine']:
             max_model_tokens = 2049
         else:
             max_model_tokens = 1024
 
-        if options['max_tokens'] > max_model_tokens:
+        if inputs['input_ids'].shape[1] > max_model_tokens // 2:
             inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
             options['max_tokens'] = max_model_tokens
 
             prompt = self.tokenizer.decode(*inputs['input_ids'])
+
+        options['max_tokens'] = max_model_tokens - inputs['input_ids'].shape[1] #inputs['input_ids'].shape[1] * 2 + 1
 
         try:
             result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
