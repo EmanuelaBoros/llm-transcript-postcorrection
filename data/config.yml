@@ -130,32 +130,32 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-  - bigscience/bloom-560m:
-      - class: HFPrompt
-      - prompt: prompt_complex_01.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-  - bigscience/bloom-3b:
-      - class: HFPrompt
-      - prompt: prompt_complex_01.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-  - bigscience/bloom-7b1:
-      - class: HFPrompt
-      - prompt: prompt_complex_01.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
+#  - bigscience/bloom-560m:
+#      - class: HFPrompt
+#      - prompt: prompt_complex_01.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#  - bigscience/bloom-3b:
+#      - class: HFPrompt
+#      - prompt: prompt_complex_01.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#  - bigscience/bloom-7b1:
+#      - class: HFPrompt
+#      - prompt: prompt_complex_01.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
 #  - dslack/glm-130b: # english and chinese
 #      - class: HFPrompt
 #      - prompt: prompt_complex_02.txt
