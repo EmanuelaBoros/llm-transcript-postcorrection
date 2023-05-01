@@ -589,6 +589,8 @@ def _get_align_stats(alignment, src_string, target, gap_char):
     align_stats["matching_chars"] = matching_chars_count
     align_stats["matching_alnum_words"] = matching_alnum_words_count
     align_stats["matching_words"] = matching_words_count
+    if alnum_words_count == 0:
+        alnum_words_count = 0.000000001
     align_stats["alnum_word_accuracy"] = matching_alnum_words_count / alnum_words_count
     align_stats["word_accuracy"] = matching_words_count / word_count
     align_stats["char_accuracy"] = matching_chars_count / char_count
@@ -693,6 +695,11 @@ def get_stats(target, src_string):
         GAP_CHAR if GAP_CHAR in gap_char_candidates else gap_char_candidates.pop()
     )
     alignment = align_w_anchor(src_string, target, gap_char=gap_char)
+    # print('alignment:', alignment, 'src_string:', src_string, 'target:', target, gap_char)
+    if len(target.strip()) == 0:
+        target = 'No text'
+    if len(src_string.strip()) == 0:
+        src_string = 'No text'
     align_stats, substitution_dict = get_align_stats(
         alignment, src_string, target, gap_char
     )
