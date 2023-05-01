@@ -87,7 +87,7 @@ class HFPrompt(Prompt):
         if 'llama' in model.lower():
 
             self.tokenizer = LlamaTokenizer.from_pretrained(model)
-            self.model = LlamaForCausalLM.from_pretrained(model)
+            self.model = LlamaForCausalLM.from_pretrained(model).to(device)
 
         elif "alpaca" in model.lower():
             from peft import PeftModel
@@ -103,7 +103,7 @@ class HFPrompt(Prompt):
                     BASE_MODEL,
                     load_in_8bit=False,
                     torch_dtype=torch.float16,
-                    device_map="auto",
+                    device_map={"": device},
                 )
                 self.model = PeftModel.from_pretrained(
                     model, LORA_WEIGHTS, torch_dtype=torch.float16, force_download=True)
