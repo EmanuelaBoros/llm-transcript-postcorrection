@@ -1,4 +1,4 @@
-SECRET_KEY: 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
+#SECRET_KEY:
 
 prompt: prompt_basic_01.txt
 # Lists for loops

@@ -39,7 +39,7 @@ def generate(
     with open(config_file, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
-    openai.api_key = config['SECRET_KEY']
+    openai.api_key = os.getenv("OPENAI_API_KEY") #config['SECRET_KEY']
     if 'prompt' in config:
         prompt_path = os.path.join(prompt_dir, config['prompt'])
         # If prompt is a file path, load the file as the prompt.
@@ -72,7 +72,7 @@ def generate(
         module = importlib.import_module('prompt')
         class_ = getattr(module, model_class)
         instance = class_(
-            api_key=config['SECRET_KEY'],
+            api_key=os.getenv("OPENAI_API_KEY"),
             model=model_name,
             device=device)
 
