@@ -121,7 +121,7 @@ def generate(
 
                                         if text is not None:
                                             # print(TEXT_LEVEL, text[:20])
-                                            data[Const.PREDICTION][Const.PROMPT] =  prompt.replace('{{TEXT}}', text)
+                                            data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
                                             # logger.info('--Text: {}'.format(data[Const.PREDICTION][Const.PROMPT]))
 
                                             # loop = asyncio.get_event_loop()

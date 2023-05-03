@@ -187,7 +187,12 @@ class HFPrompt(Prompt):
             #         max_new_tokens=max_new_tokens,
             #     )
 
-            result = self.tokenizer.decode(self.model.generate(input_ids=inputs["input_ids"], max_length=options['max_tokens'], pad_token_id=self.tokenizer.eos_token_id, do_sample=True, top_k=50, top_p=0.9)[0])
+            result = self.tokenizer.decode(
+                self.model.generate(
+                    input_ids=inputs["input_ids"],
+                    max_length=options['max_tokens'],
+                    pad_token_id=self.tokenizer.eos_token_id,
+                    do_sample=True, top_k=50, top_p=0.9)[0])
 
         # OPT adds the prompt in the response, so we are removing it
         last_comment_in_prompt = prompt.split('\n')[-1]
