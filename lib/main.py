@@ -162,18 +162,14 @@ def generate(
                                             data[Const.PREDICTION][TEXT_LEVEL] = result
                                             # data[Const.PREDICTION].update({"num_generate": idx}) # TODO: for now, just one run
 
-                                            data = json_line | data
-                                            f.write(data)
-                                            # f.flush()
-
                                             already_done[text] = result
 
-                                            # loop.close()
-
-                                            # except Exception as ex:
-                                            #     logging.warning(f'Exception: {ex} {input_file}')
                                     else:
                                         data[Const.PREDICTION].update({TEXT_LEVEL: already_done[text]})
+
+                                data = json_line | data
+                                f.write(data)
+                                # f.flush()
 
                                     # data[Const.PREDICTION].update({Const.PROMPT: None})
 
