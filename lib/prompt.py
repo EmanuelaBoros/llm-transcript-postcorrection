@@ -67,11 +67,13 @@ class GPTPrompt(Prompt):
             #     "instruction": "Fix the spelling mistakes",
             # }
             # Chat endpoints do not have the same engine
-
-        options.update({'model': options['engine']})
-        options.pop('engine')
-        result = openai.ChatCompletion.create(
-            **options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
+        if ('3' in options['engine']) or ('4' in options['engine']):
+            options.update({'model': options['engine']})
+            options.pop('engine')
+            result = openai.ChatCompletion.create(
+                **options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
+        else:
+            result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
 
         return result
 

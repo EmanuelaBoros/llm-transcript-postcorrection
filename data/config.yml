@@ -3,18 +3,18 @@
 prompt: prompt_basic_01.txt
 # Lists for loops
 models:
-#  - gpt-4:
-#      - class: GPTPrompt
-#      - prompt: prompt_complex_02.txt
-#      - num_generate: 1
-#      - temperatures:
-#          - 0.1
-#          - 0.5
-#          - 0.9
-#          - 1.0
-#          - 1.5
-#          - 1.9
-#          - 2.0
+  - gpt-4:
+      - class: GPTPrompt
+      - prompt: prompt_complex_02.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
+          - 0.9
+          - 1.0
+          - 1.5
+          - 1.9
+          - 2.0
   - gpt-3.5-turbo:
       - class: GPTPrompt
       - prompt: prompt_basic_01.txt
@@ -27,24 +27,24 @@ models:
           - 1.5
           - 1.9
           - 2.0
-#  - davinci:
-#      - class: GPTPrompt
-#      - prompt: prompt_complex_02.txt
-#      - num_generate: 1
-#      - temperatures:
-#          - 0.1
-#          - 0.5
-#          - 0.9
-#          - 1.0
-#          - 1.5
-#          - 1.9
-#          - 2.0
-#  - gpt2:
-#      - class: HFPrompt
-#      - prompt: prompt_complex_02.txt
-#      - num_generate: 1
-#      - temperatures:
-#          - 0.75
+  - davinci:
+      - class: GPTPrompt
+      - prompt: prompt_complex_02.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
+          - 0.9
+          - 1.0
+          - 1.5
+          - 1.9
+          - 2.0
+  - gpt2:
+      - class: HFPrompt
+      - prompt: prompt_complex_02.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.75
 #  - text-curie-001:
 #      - class: GPTPrompt
 #      - prompt: prompt_complex_02.txt
@@ -81,13 +81,13 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-#  - facebook/opt-350m: # OPT is very inconsistent
-#      - class: HFPrompt
-#      - prompt: prompt_complex_02.txt
-#      - num_generate: 1
-#      - temperatures:
-#          - 0.1
-#          - 0.5
+  - facebook/opt-350m: # OPT is very inconsistent
+      - class: HFPrompt
+      - prompt: prompt_complex_02.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
 #  - facebook/opt-6.7b: # OPT is very inconsistent
 #      - class: HFPrompt
 #      - prompt: prompt_complex_02.txt
@@ -130,14 +130,14 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-#  - bigscience/bloom-560m:
-#      - class: HFPrompt
-#      - prompt: prompt_complex_01.txt
-#      - num_generate: 1
-#      - temperatures:
-#          - 0.1
-#          - 0.5
-#          - 0.9
+  - bigscience/bloom-560m:
+      - class: HFPrompt
+      - prompt: prompt_complex_01.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
+          - 0.9
 #  - bigscience/bloom-3b:
 #      - class: HFPrompt
 #      - prompt: prompt_complex_01.txt
