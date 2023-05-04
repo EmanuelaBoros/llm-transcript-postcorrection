@@ -56,11 +56,11 @@ class GPTPrompt(Prompt):
         #options['max_tokens'] = max_model_tokens - inputs['input_ids'].shape[1]
 
         # print(options['max_tokens'], inputs['input_ids'].shape[1])
-        try:
-            result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
-        except BaseException as ex:
-            import pdb;pdb.set_trace()
-            print(f'Error: {ex}')
+        # if '3' or '4' in options['engine']:
+        #     result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
+        # except BaseException as ex:
+            # import pdb;pdb.set_trace()
+            # print(f'Error: {ex}')
             # {
             #     "model": "text-davinci-edit-001",
             #     "input": "What day of the wek is it?",
@@ -68,10 +68,10 @@ class GPTPrompt(Prompt):
             # }
             # Chat endpoints do not have the same engine
 
-            options.update({'model': options['engine']})
-            options.pop('engine')
-            result = openai.ChatCompletion.create(
-                **options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
+        options.update({'model': options['engine']})
+        options.pop('engine')
+        result = openai.ChatCompletion.create(
+            **options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
 
         return result
 

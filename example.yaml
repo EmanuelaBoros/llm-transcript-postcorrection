@@ -1,0 +1,55 @@
+apiVersion: run.ai/v1
+kind: RunaiJob
+metadata:
+  name: JOBTEST 
+  labels:
+    priorityClassName: "build" # Interactive Job if present, for Train Job REMOVE this line
+    user: eboros
+spec:
+  template:
+    metadata:
+      labels:
+        user: emanuela.boros # User e.g. firstname.lastname
+    spec:
+      hostIPC: true
+      schedulerName: runai-scheduler
+      restartPolicy: Never
+      nodeSelector:
+        run.ai/type: G10 # "S8" (CPU only), "G9" (Nvidia V100) or "G10" (Nvidia A100)
+      securityContext:
+        runAsUser: 268532 # insert uid found in people.epfl in admistrative data
+        runAsGroup: 11703 # insert gid as found in people.epfl in admistrative data
+        fsGroup: 11703
+      containers:
+      - name: container-name
+        image: ic-registry.epfl.ch/LAB/FOLDER/IMAGE:VERSION # ic-registry.epfl.ch/mlo/base:ubuntu20.04-cuda110-cudnn8 https://gist.github.com/mpagli/d9550430b6beead3c1747f6cfa7b4ab7
+        workingDir : /PATH/TO/WORKINGDIR #     /home/eboros?
+        command: ["/bin/bash"]
+        args:
+        - "-c"
+        - "SOME COMMANDS TO EXECUTE && SOME OTHER COMMANDES TO EXECUTE"
+
+        env:
+          - name: HOME
+            value: "/PATH/TO/HOMEDIR"
+          - name: PYTHONPATH
+            value: "/PATH/TO/PYLIB1:/PATH/TO/PYLIB2:/PATH/TO/PYLIB3" 
+         volumeMounts:
+            - mountPath: /mountpoint
+              name: volumename
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+        volumeMounts:
+          - mountPath: /MOUNTPATH1
+            name: VOLUME_NAME1
+          - mountPath: /MOUNTPATH2
+            name: VOLUME_NAME2
+      volumes:
+        - name: VOLUME_NAME1
+          persistentVolumeClaim:
+            claimName: runai-pv-VOLUME1
+        - name: VOLUME_NAME2
+          persistentVolumeClaim:
+            claimName: runai-pv-VOLUME2
+

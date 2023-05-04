@@ -107,10 +107,29 @@ def generate(
                         desc="Processing files",
                         unit="file")
 
+                    mode = 'w'
+                    count = None
+
+                    if os.path.exists(output_file):
+                        mode = 'a'
+                        logging.info('We found the results file {}. We will continue predicting from where it was '
+                                     'left off.'.format(output_file))
+                        lines = []
+                        count = 0
+                        with jsonlines.open(output_file, 'r') as f:
+                            for json_line in f:
+                                lines.append(json_line)
+                                count += 1
                     already_done = {}
-                    with jsonlines.open(output_file, 'w') as f:
+
+                    with jsonlines.open(output_file, mode) as f:
                         with jsonlines.open(input_file, 'r') as g:
-                            for json_line in g:
+                            for idx, json_line in enumerate(g):
+                                progress_bar.update(1)
+                                if count is not None:
+                                    if idx <= count:
+                                        continue
+
                                 data = {
                                     Const.PREDICTION: {
                                         }
@@ -157,7 +176,7 @@ def generate(
                                         data[Const.PREDICTION].update({TEXT_LEVEL: already_done[text]})
 
                                     # data[Const.PREDICTION].update({Const.PROMPT: None})
-                                progress_bar.update(1)
+
                     progress_bar.close()
 
 
