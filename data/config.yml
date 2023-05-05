@@ -195,31 +195,31 @@ models:
           - 0.1
           - 0.5
           - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - decapoda-research/llama-13b-hf:
-      - class: HFPrompt
-      - prompt: prompt_complex_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  - decapoda-research/llama-65b-hf:
-      - class: HFPrompt
-      - prompt: prompt_complex_02.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - decapoda-research/llama-13b-hf:
+#      - class: HFPrompt
+#      - prompt: prompt_complex_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
+#          - 1.5
+#          - 1.9
+#          - 2.0
+#  - decapoda-research/llama-65b-hf:
+#      - class: HFPrompt
+#      - prompt: prompt_complex_02.txt
+#      - num_generate: 1
+#      - temperatures:
+#          - 0.1
+#          - 0.5
+#          - 0.9
+#          - 1.0
   - tloen/alpaca-lora-7b:
       - class: HFPrompt
       - prompt: prompt_complex_02.txt
