@@ -1,4 +1,3 @@
-HUMAN_TRANSCRIPTION,SYSTEM_TRANSCRIPTION,ImageID,TEXT_LINE_NUM,CENTURY
 
 import os
 import argparse
@@ -22,35 +21,30 @@ def process_file(
 
     # Parse the ground truth file
     df = pd.read_csv(input_file)
-    import pdb;pdb.set_trace()
-    with open(input_file, 'r') as f:
-        text = f.read()
-    articles = text.split('*$*OVERPROOF*$*')
+
+    grouped = df.groupby('ImageID')
+
+    # for name, group in grouped:
+    #     print(name, group)
+    # import pdb;pdb.set_trace()
+    # HUMAN_TRANSCRIPTION, SYSTEM_TRANSCRIPTION, ImageID, TEXT_LINE_NUM, CENTURY
 
     aligned_texts = []
 
-    language = detect(text)
+    language = 'el'
 
-    articles_keep, articles_removed, _, _ = train_test_split(articles, articles, test_size=0.8, random_state=43)
+    # articles_keep, articles_removed, _, _ = train_test_split(articles, articles, test_size=0.8, random_state=43)
 
-    for article in articles_keep:
-        if not article.strip():
-            continue
-        lines = article.split('\n')
-
+    for name, article in grouped:
         # Keep the article id
-        article_id = lines[0].strip()
-
+        article_id = name.strip()
+        century = article.CENTURY.unique()[0]
         # Align the lines before all types of extraction so the region/article
         # can be produced
         aligned_lines = []
-        for line in lines:
-            line = line.strip()
-            if '||@@||' in line:
-                aligned_lines.append(tuple(line.split('||@@||')))
+        for gt_line, ocr_line in zip(article.HUMAN_TRANSCRIPTION, article.SYSTEM_TRANSCRIPTION):
+            aligned_lines.append((gt_line, ocr_line))
 
-        # import pdb;pdb.set_trace()
-        # The region in OVERPROOF is the article level
         gt_region_text = ' '.join(
             [gt_line[0] for gt_line in aligned_lines]).strip()
         ocr_region_text = ' '.join(
@@ -80,7 +74,7 @@ def process_file(
             pdb.set_trace()
 
         # Append the output to a JSON Lines file
-        with open(output_file, "a") as outfile:
+        with open(output_file, "a", encoding='utf8') as outfile:
             for gt_element, ocr_element in zip(gt_reconstructed_sentences, ocr_reconstructed_sentences):
                 (gt_line, gt_sentence) = gt_element
                 (ocr_line, ocr_sentence) = ocr_element
@@ -97,9 +91,14 @@ def process_file(
                                                        Const.REGION: clean_text(gt_region_text)}
                                         # TODO removed temporarily the region - too
                                         # large
-                                        } | {'article_id': article_id})
+                                        } | {'article_id': article_id, 'century': str(century)})
                 outfile.write(json_line + "\n")
                 outfile.flush()
+        import jsonlines
+        with jsonlines.open(output_file, 'r') as g:
+            for x in g:
+                # import pdb;pdb.set_trace()
+                print(x)
 
 
 if __name__ == "__main__":
@@ -149,7 +148,7 @@ if __name__ == "__main__":
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
             print(file)
-            if file.endswith("test.csv"):
+            if file == "original_test.csv":
                 input_file = os.path.join(root, file)
 
                 logging.info('Analyzing file {}'.format(input_file))
