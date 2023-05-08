@@ -134,7 +134,9 @@ if __name__ == "__main__":
         type=str,
         help='Path to ground truth folder')
     parser.add_argument('--ocr_dir', type=str, help='Path to OCRed folder',
-                        default='../../data/datasets/ocr/original/impresso-nzz/xml/ABBYY_FineReader_XIX')
+                        default='../../data/datasets/ocr/original/impresso-nzz/xml/ABBYY_FineReader_Server11')
+    parser.add_argument('--test_file_name', type=str, help='Path to OCRed folder',
+                        default='../../data/datasets/ocr/original/impresso-nzz/test-set-filenames.txt')
     parser.add_argument(
         "--output_dir",
         help="The path to the output directory where JSON Lines files will be created.")
@@ -168,39 +170,63 @@ if __name__ == "__main__":
 
     dataset_name = args.input_dir.split('/')[-1]
     output_file = os.path.join(args.output_dir, '{}.jsonl'.format(dataset_name).lower())
-    if len(output_file.strip()) == 0:
+    if len(dataset_name.strip()) == 0:
         dataset_name = args.input_dir.split('/')[-2]
         output_file = os.path.join(args.output_dir, '{}.jsonl'.format(dataset_name).lower())
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
 
-    with open(os.path.join(args.input_dir, 'test-set-filenames.txt'), 'r') as f:
+    with open(args.test_file_name, 'r') as f:
         test_set_filenames = [x.strip() for x in f.readlines()]
 
+    import glob
+    gt_files, ocr_files = [], []
     logging.info('Writing output {}'.format(output_file))
     for root, dirs, files in os.walk(args.input_dir):
-        for file in files:
-            if file.endswith(".xml"):
-                if file in test_set_filenames:
-                    input_file = os.path.join(root, file)
-                    ocr_file = os.path.join(args.ocr_dir, file)
-                    print(input_file)
-                    logging.info('Analyzing file {}'.format(input_file))
+        for input_file in files:
+            # do something with the file
+            file = os.path.join(root, input_file)
+            # print(file)
+            ocr_file = os.path.join(args.ocr_dir, input_file)
 
-                    process_file(
-                        args=args,
-                        input_file=input_file,
-                        ocr_file=ocr_file,
-                        output_file=output_file,
-                        dataset_name=dataset_name)
-                    progress_bar.update(1)
+            if file.endswith(".xml") and 'readme' not in file:
+
+                # logging.info('Analyzing file {}'.format(file))
+                if input_file in test_set_filenames:
+                    gt_files.append(file)
+                    ocr_files.append(ocr_file)
                 else:
                     if os.path.exists(os.path.join(root, file)):
                         print(f'Deleting {file}.')
                         os.remove(os.path.join(root, file))
                         if os.path.exists(os.path.join(args.ocr_dir, file)):
                             os.remove(os.path.join(args.ocr_dir, file))
+
+    print(len(gt_files), len(ocr_files))
+
+    from sklearn.model_selection import train_test_split
+    files_keep, files_removed, ocr_files_keep, ocr_files_removed = train_test_split(
+        gt_files, ocr_files, test_size=0.5, random_state=43)
+    print(len(files_keep), len(files_removed))
+
+    logging.info('Writing output {}'.format(output_file))
+
+    for input_file, ocr_file in zip(files_keep, ocr_files_keep):
+            # if file in test_set_filenames:
+                # input_file = os.path.join(root, file)
+                # ocr_file = os.path.join(args.ocr_dir, file)
+                # print(input_file)
+                logging.info('Analyzing file {}'.format(input_file))
+
+                process_file(
+                    args=args,
+                    input_file=input_file,
+                    ocr_file=ocr_file,
+                    output_file=output_file,
+                    dataset_name=dataset_name)
+                progress_bar.update(1)
+
 
     # Removing the OCRed files that are not in test-set-filenames.
     # There are more than the groundtruth.
