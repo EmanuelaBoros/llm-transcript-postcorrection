@@ -40,15 +40,15 @@ def generate(
         config = yaml.safe_load(f)
 
     openai.api_key = os.getenv("OPENAI_API_KEY") #config['SECRET_KEY']
-    if 'prompt' in config:
-        prompt_path = os.path.join(prompt_dir, config['prompt'])
-        # If prompt is a file path, load the file as the prompt.
-        if os.path.exists(prompt_path):
-            logger.info(f"Loading prompt from {prompt_path}.")
-            with open(prompt_path, "r", encoding="utf-8") as f:
-                prompt = f.read()
-        else:
-            logger.info(f"Model prompt missing: {prompt_path}.")
+
+    prompt_path = os.path.join(prompt_dir, args.prompt)
+    # If prompt is a file path, load the file as the prompt.
+    if os.path.exists(prompt_path):
+        logger.info(f"Loading prompt from {prompt_path}.")
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            prompt = f.read()
+    else:
+        logger.info(f"Model prompt missing: {prompt_path}.")
 
     for model in config['models']:
 
@@ -200,6 +200,12 @@ if __name__ == "__main__":
         default='cpu',
         type=str,
         help="The inference is done either on cuda or cpu.",
+    )
+    parser.add_argument(
+        "--prompt",
+        default='prompt_basic_02.txt',
+        type=str,
+        help="The selected prompt.",
     )
     parser.add_argument(
         "-d",
