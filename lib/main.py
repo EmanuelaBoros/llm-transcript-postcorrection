@@ -63,7 +63,7 @@ def generate(
 
         results_dir = os.path.join(
             output_dir,
-            config['prompt'].replace(
+            args.prompt.replace(
                 '.txt',
                 ''))
         if not os.path.exists(results_dir):
