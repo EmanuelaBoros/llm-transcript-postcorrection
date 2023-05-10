@@ -1,78 +1,20 @@
-FROM ic-registry.epfl.ch/mlo/base:ubuntu20.04-cuda110-cudnn8
-MAINTAINER emanuela boros <emanuela.boros@epfl.ch>
+# Use an official Python runtime as a parent image
+FROM python:3.8-slim
 
-#
-## install some necessary tools.
-#RUN apt-get update \
-#    && apt-get install -y --no-install-recommends \
-#        build-essential \
-#        ca-certificates \
-#        pkg-config \
-#        software-properties-common
-#RUN apt-get install -y \
-#        inkscape \
-#        texlive-latex-extra \
-#        dvipng \
-#        texlive-full \
-#        jed \
-#        libsm6 \
-#        libxext-dev \
-#        libxrender1 \
-#        lmodern \
-#        libcurl3-dev \
-#        libfreetype6-dev \
-#        libzmq3-dev \
-#        libcupti-dev \
-#        pkg-config \
-#        libjpeg-dev \
-#        libpng-dev \
-#        zlib1g-dev \
-#        locales
-#RUN apt-get install -y \
-#        rsync \
-#        cmake \
-#        g++ \
-#        swig \
-#        vim \
-#        git \
-#        curl \
-#        wget \
-#        unzip \
-#        zsh \
-#        git \
-#        screen \
-#        tmux
-#RUN apt-get install -y openssh-server
-## install good vim.
-#RUN curl http://j.mp/spf13-vim3 -L -o - | sh
+# Set the working directory to /app
+WORKDIR /app
 
-# configure environments.
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-# configure user.
-ENV SHELL=/bin/bash \
-    NB_USER=eboros \
-    NB_UID=268532 \
-    NB_GROUP=DHLAB \
-    NB_GID=11703
-ENV HOME=/home/$NB_USER
+# Install any needed packages specified in requirements.txt
+RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
-RUN groupadd $NB_GROUP -g $NB_GID
-RUN useradd -m -s /bin/bash -N -u $NB_UID -g $NB_GID $NB_USER && \
-    echo "${NB_USER}:${NB_USER}" | chpasswd && \
-    usermod -aG sudo,adm,root ${NB_USER}
-RUN chown -R ${NB_USER}:${NB_GROUP} ${HOME}
+# Make port 80 available to the world outside this container
+EXPOSE 80
 
-# The user gets passwordless sudo
-RUN echo "${NB_USER}   ALL = NOPASSWD: ALL" > /etc/sudoers
+# Define environment variable
+ENV NAME World
 
-###### switch to user and compile test example.
-USER ${NB_USER}
-
-###### switch to root
-# expose port for ssh and start ssh service.
-EXPOSE 22
-# expose port for notebook.
-EXPOSE 8888
-# expose port for tensorboard.
-EXPOSE 6666
+# Run main.py when the container launches
+CMD ["python", "lib/main.py"]
