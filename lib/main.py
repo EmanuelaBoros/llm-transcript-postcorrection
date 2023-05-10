@@ -208,6 +208,12 @@ if __name__ == "__main__":
         help="The selected prompt.",
     )
     parser.add_argument(
+        "--config_file",
+        default='../data/config.yml',
+        type=str,
+        help="The selected prompt.",
+    )
+    parser.add_argument(
         "-d",
         "--debug",
         help="Print lots of debugging statements",
