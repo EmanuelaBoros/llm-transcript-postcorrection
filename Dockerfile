@@ -1,25 +1,23 @@
 # Install python and its packages
-
 FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
 
-# TF fails to find "libcudart.so.10.1"
-# First, theres /usr/local/nvidia/lib64 in LD_LIBRARY_PATH, but /usr/local/nvidia does not exist
-# We link the existing /usr/local/cuda-10.2 to fill that role.
-# RUN ln -s /usr/local/cuda-10.2 /usr/local/nvidia \
-# 	&& ln -s /usr/local/cuda-10.2/lib64/libcudart.so.10.2 /usr/local/nvidia/lib64/libcudart.so.10.1
-
-# Update package lists and install Python and pip
+# Update package lists and install Python, pip, and software-properties-common
 # Install build tools and libraries
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential python pip && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.11 python3-pip python3.11-venv && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Test if Python and pip are working
-#RUN python3 --version && pip3 --version
+# Create a virtual environment and activate it
+RUN python3.11 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# scientific
-RUN pip install \
+# Install Python libraries
+RUN python -m pip install --upgrade pip setuptools && \
+    pip install \
 	numpy scipy scikit-learn \
 	matplotlib seaborn \
 	pillow beautifulsoup4 fire \
@@ -27,37 +25,14 @@ RUN pip install \
 	langdetect openai \
     nltk PyYAML pysbd \
     textdistance \
-    transformers
-
-RUN pip install --no-deps genalog==0.1.0
-# interactive
-# RUN pip install \
-#	ipython jupyterlab tqdm
-
-# pytorch
-# use shared cache for pytorch
-ENV TORCH_MODEL_ZOO /dhlab1/pytorch_model_zoo/models
-ENV TORCH_HOME /dhlab1/pytorch_model_zoo
-# install pytorch for cuda11
-#
-#RUN pip --no-cache-dir install \
-#	torch torchvision torchaudio \
-#	--extra-index-url https://download.pytorch.org/whl/cu113 \
-#	&& pip --no-cache-dir install tensorboard \
-#	&& pip --no-cache-dir install --no-deps kornia
-
-# Update pip and setuptools
-#RUN python -m pip install --upgrade pip setuptools
+    transformers \
+    --no-deps genalog==0.1.0
 
 # Set the working directory to /app
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 COPY . /app
-
-# Install any needed packages specified in requirements.txt
-#RUN python -m pip install --upgrade pip
-#RUN pip install -r requirements.txt
 
 # Make port 80 available to the world outside this container
 EXPOSE 80
