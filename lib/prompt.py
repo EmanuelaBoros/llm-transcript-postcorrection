@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import openai
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch

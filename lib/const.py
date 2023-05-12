@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 class Const:
     OCR = 'ocr'
     GROUND = 'groundtruth'
