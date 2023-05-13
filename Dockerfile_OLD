@@ -1,2 +1,0 @@
-FROM amd64/ubuntu:latest
-CMD ["sleep", "infinity"]
