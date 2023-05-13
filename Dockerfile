@@ -30,6 +30,11 @@ RUN ls /opt/conda/bin
 RUN which conda
 # Creating Python environment
 RUN conda create -n py311 python=3.11
+    #&& \
+    #conda activate py311
+
+# Use this new environment for subsequent commands
+SHELL ["conda", "run", "-n", "py311", "/bin/bash", "-c"]
 
 # Activate environment and install packages
 RUN echo "source activate py311" > ~/.bashrc
@@ -44,11 +49,10 @@ RUN python -m pip install --upgrade pip setuptools && \
 	pandas multidict \
 	langdetect openai \
     nltk PyYAML pysbd \
-    textdistance \
-    transformers \
-    --no-deps genalog==0.1.0
+    textdistance jsonlines \
+    torch transformers
 
-
+RUN pip install genalog==0.1.0 --no-deps
 
 # Set the working directory to /app
 WORKDIR /app
@@ -66,4 +70,4 @@ ENV NAME World
 RUN chmod +x run_one.sh
 
 # Run run_parallel.sh when the container launches
-CMD ["./run_one.sh", "impresso", "prompt_basic_01.txt", "data/config_cluster.yaml"]
+CMD ["./run_one.sh", "impresso", "prompt_basic_01.txt", "data/config_cluster.yml"]
