@@ -46,10 +46,14 @@ RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
 RUN /home/eboros/.conda/condabin/conda run -n myenv pip install genalog==0.1.0 --no-deps
 
 
+
 COPY . /home/eboros/app
 
 RUN ls -la
 USER eboros
+RUN /bin/bash -cu source /run/secrets/my_env && groupadd -g ${GROUP_ID} ${GROUP_NAME} && useradd -rm -d /home/${USER_NAME} -s /bin/bash -g ${GROUP_ID} -u ${USER_ID} ${USER_NAME} && chown ${USER_ID} -R /home/${USER_NAME} && echo -e "${USER_NAME}\n${USER_NAME}" | passwd ${USER_NAME} # buildkit
+
+
 WORKDIR /home/eboros/app
 
 # Ensure run_parallel.sh is executable
