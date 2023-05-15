@@ -1,37 +1,34 @@
-# Install python and its packages
+# Set base image
 FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
 
-ENV LIBRARY_PATH=/usr/local/cuda/lib64/stubs
-SHELL ["/bin/bash", "-cu"]
-WORKDIR /
+# Set environment variables for user
 ENV USER_NAME=eboros
-ENV HOME=/home/eboros
+ENV USER_ID=268532
+ENV GROUP_NAME=DHLAB-unit
+ENV GROUP_ID=11703
+
+# Install sudo
+#RUN apt-get update && apt-get install -y sudo
 
 # Install build tools and libraries
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential \
     git curl vim unzip wget tmux screen ca-certificates apt-utils software-properties-common wget && \
+    apt-get install -y sudo && \
     apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Create a group and user
+RUN groupadd -g $GROUP_ID $GROUP_NAME
+RUN useradd -ms /bin/bash -u $USER_ID -g $GROUP_ID $USER_NAME
 
-ENV SHELL=/bin/bash NB_USER=eboros NB_UID=268532 NB_GROUP=DHLAB-unit NB_GID=11703
-ENV HOME=/home/eboros
-RUN groupadd $NB_GROUP -g $NB_GID # buildkit
-RUN useradd -m -s /bin/bash -N -u $NB_UID -g $NB_GID $NB_USER && echo "${NB_USER}:${NB_USER}" | chpasswd && usermod -aG sudo,adm,root ${NB_USER} # buildkit
-RUN chown -R ${NB_USER}:${NB_GROUP} ${HOME} # buildkit
-RUN echo "${NB_USER} ALL = NOPASSWD: ALL" > /etc/sudoers # buildkit
-RUN echo "${NB_USER} ALL = NOPASSWD: ALL" > /etc/sudoers # buildkit
+# Add new user to sudoers
+RUN echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-USER eboros
+# Add Conda
 ENV CONDA_PREFIX=/home/eboros/.conda
 ENV CONDA=/home/eboros/.conda/condabin/conda
-WORKDIR /home/eboros/app
-#RUN chown eboros:eboros /home/eboros/app/run_one.sh && chmod +x /home/eboros/app/run_one.sh
-RUN chown -R ${NB_USER}:${NB_GROUP} ${HOME} # buildkit
-RUN chown -R ${NB_USER}:${NB_GROUP} /home/eboros/app/ # buildkit
-
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
     bash miniconda.sh -b -p ${CONDA_PREFIX} && \
     rm miniconda.sh && \
@@ -52,16 +49,21 @@ RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
     torch transformers
 RUN /home/eboros/.conda/condabin/conda run -n myenv pip install genalog==0.1.0 --no-deps
 
-COPY . /home/eboros/app
 
-#COPY run_one.sh /home/eboros/app/
-RUN chown -R ${NB_USER}:${NB_GROUP} /home/eboros/app/ # buildkit
-RUN ls -la
+# Set the working directory
+WORKDIR /home/$USER_NAME/app
 
-WORKDIR /home/eboros/app
+# Copy app directory
+COPY . .
 
-# Ensure run_parallel.sh is executable
-RUN chmod +x /home/eboros/app/run_one.sh
+# Change ownership of the copied files to the new user and group
+RUN chown -R $USER_NAME:$GROUP_NAME /home/$USER_NAME/app
+
+# Switch to the new user
+USER $USER_NAME
+
+# Make sure your script is executable
+RUN chmod +x run_one.sh
 
 # Run run_parallel.sh when the container launches
 CMD ["./run_one.sh", "impresso", "prompt_basic_01.txt", "data/config_cluster.yml"]
