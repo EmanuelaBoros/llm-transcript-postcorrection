@@ -169,3 +169,26 @@ if __name__ == "__main__":
             dataset_name=dataset_name)
         progress_bar.update(1)
     progress_bar.close()
+
+    # TRAIN SET
+    output_file = os.path.join(args.output_dir,
+                               '{}-train.jsonl'.format(dataset_name))
+    if os.path.exists(output_file):
+        logging.info('{} already exists. It will be deleted.')
+        os.remove(output_file)
+
+    total_files = len(files_removed)
+    progress_bar = tqdm(
+        total=total_files,
+        desc="Processing files",
+        unit="file")
+
+    print(f'There are {len(files_removed)} files')
+    for input_file in files_removed:
+        process_file(
+            args=args,
+            input_file=input_file,
+            output_file=output_file,
+            dataset_name=dataset_name)
+        progress_bar.update(1)
+    progress_bar.close()
