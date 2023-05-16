@@ -36,7 +36,10 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     ${CONDA} init bash && \
     ${CONDA} create --name myenv python=3.11
 
+ENV PATH="/home/eboros/.conda/envs/myenv/bin:$PATH"
+
 RUN /home/eboros/.conda/condabin/conda create -n myenv python=3.11 pip
+
 RUN /home/eboros/.conda/condabin/conda run -n myenv pip install --upgrade pip setuptools
 RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
 	numpy scipy scikit-learn \
@@ -46,9 +49,11 @@ RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
 	langdetect openai \
     nltk PyYAML pysbd \
     textdistance jsonlines \
-    torch transformers
+    torch transformers sentencepiece
 RUN /home/eboros/.conda/condabin/conda run -n myenv pip install genalog==0.1.0 --no-deps
 
+
+ENV PATH="/home/eboros/.conda/envs/myenv/bin:$PATH"
 
 # Set the working directory
 WORKDIR /home/$USER_NAME/app
@@ -66,4 +71,5 @@ USER $USER_NAME
 RUN chmod +x run_one.sh
 
 # Run run_parallel.sh when the container launches
-CMD ["./run_one.sh", "impresso", "prompt_basic_01.txt", "data/config_cluster.yml"]
+#CMD ["./run_one.sh", "impresso", "prompt_basic_01.txt", "data/config_cluster.yml"]
+CMD ["sleep", "infinity"]
