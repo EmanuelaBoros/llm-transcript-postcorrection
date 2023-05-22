@@ -29,73 +29,75 @@ def process_file(
 
     articles_keep, articles_removed, _, _ = train_test_split(articles, articles, test_size=0.8, random_state=43)
 
-    for article in articles_keep:
-        if not article.strip():
-            continue
-        lines = article.split('\n')
+    for element in zip([articles_keep, articles_removed], [output_file, output_file.replace('.jsonl', '-train.jsonl')]):
+        files, output_file = element
+        for article in files:
+            if not article.strip():
+                continue
+            lines = article.split('\n')
 
-        # Keep the article id
-        article_id = lines[0].strip()
+            # Keep the article id
+            article_id = lines[0].strip()
 
-        # Align the lines before all types of extraction so the region/article
-        # can be produced
-        aligned_lines = []
-        for line in lines:
-            line = line.strip()
-            if '||@@||' in line:
-                aligned_lines.append(tuple(line.split('||@@||')))
+            # Align the lines before all types of extraction so the region/article
+            # can be produced
+            aligned_lines = []
+            for line in lines:
+                line = line.strip()
+                if '||@@||' in line:
+                    aligned_lines.append(tuple(line.split('||@@||')))
 
-        # import pdb;pdb.set_trace()
-        # The region in OVERPROOF is the article level
-        gt_region_text = ' '.join(
-            [gt_line[0] for gt_line in aligned_lines]).strip()
-        ocr_region_text = ' '.join(
-            [ocr_line[-1] for ocr_line in aligned_lines]).strip()
-        aligned_texts.append((gt_region_text, ocr_region_text, article_id))
+            # import pdb;pdb.set_trace()
+            # The region in OVERPROOF is the article level
+            gt_region_text = ' '.join(
+                [gt_line[0] for gt_line in aligned_lines]).strip()
+            ocr_region_text = ' '.join(
+                [ocr_line[-1] for ocr_line in aligned_lines]).strip()
+            aligned_texts.append((gt_region_text, ocr_region_text, article_id))
 
-        # Split in sentences and align
-        aligned_sentences = align_texts(gt_region_text,
-                                        ocr_region_text,
-                                        language=language)
+            # Split in sentences and align
+            aligned_sentences = align_texts(gt_region_text,
+                                            ocr_region_text,
+                                            language=language)
 
-        gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line[0] for gt_line in aligned_lines], \
-            [gt_sentence for gt_sentence, _ in aligned_sentences], \
-            [ocr_line[-1] for ocr_line in aligned_lines], \
-            [ocr_sentence for _, ocr_sentence in aligned_sentences]
+            gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line[0] for gt_line in aligned_lines], \
+                [gt_sentence for gt_sentence, _ in aligned_sentences], \
+                [ocr_line[-1] for ocr_line in aligned_lines], \
+                [ocr_sentence for _, ocr_sentence in aligned_sentences]
 
-        # print(gt_lines, gt_sentences)
+            # print(gt_lines, gt_sentences)
 
-        from utils import map_lines_to_sentences
-        gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences,
-                                                                                         ocr_lines, ocr_sentences)
+            from utils import map_lines_to_sentences
+            gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences,
+                                                                                             ocr_lines, ocr_sentences)
 
-        try:
-            assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
-        except BaseException:
-            import pdb
-            pdb.set_trace()
+            try:
+                assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
+            except BaseException:
+                import pdb
+                pdb.set_trace()
 
-        # Append the output to a JSON Lines file
-        with open(output_file, "a") as outfile:
-            for gt_element, ocr_element in zip(gt_reconstructed_sentences, ocr_reconstructed_sentences):
-                (gt_line, gt_sentence) = gt_element
-                (ocr_line, ocr_sentence) = ocr_element
+            # Append the output to a JSON Lines file
+            with open(output_file, "a") as outfile:
+                for gt_element, ocr_element in zip(gt_reconstructed_sentences, ocr_reconstructed_sentences):
+                    (gt_line, gt_sentence) = gt_element
+                    (ocr_line, ocr_sentence) = ocr_element
 
-                json_line = json.dumps({Const.FILE: input_file,
-                                        Const.DATASET: dataset_name,
-                                        Const.OCR: {Const.LINE: clean_text(ocr_line),
-                                                    Const.SENTENCE: clean_text(ocr_sentence),
-                                                    Const.REGION: clean_text(ocr_region_text)},
-                                        # TODO removed temporarily the region - too
-                                        # large
-                                        Const.GROUND: {Const.LINE: clean_text(gt_line),
-                                                       Const.SENTENCE: clean_text(gt_sentence),
-                                                       Const.REGION: clean_text(gt_region_text)}
-                                        # TODO removed temporarily the region - too
-                                        # large
-                                        } | {'article_id': article_id})
-                outfile.write(json_line + "\n")
-                outfile.flush()
+                    json_line = json.dumps({Const.FILE: input_file,
+                                            Const.DATASET: dataset_name,
+                                            Const.OCR: {Const.LINE: clean_text(ocr_line),
+                                                        Const.SENTENCE: clean_text(ocr_sentence),
+                                                        Const.REGION: clean_text(ocr_region_text)},
+                                            # TODO removed temporarily the region - too
+                                            # large
+                                            Const.GROUND: {Const.LINE: clean_text(gt_line),
+                                                           Const.SENTENCE: clean_text(gt_sentence),
+                                                           Const.REGION: clean_text(gt_region_text)}
+                                            # TODO removed temporarily the region - too
+                                            # large
+                                            } | {'article_id': article_id})
+                    outfile.write(json_line + "\n")
+                    outfile.flush()
 
 
 if __name__ == "__main__":
@@ -140,6 +142,9 @@ if __name__ == "__main__":
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
+    if os.path.exists(output_file.replace('.jsonl', '-train.jsonl')):
+        logging.info('{} already exists. It will be deleted.')
+        os.remove(output_file.replace('.jsonl', '-train.jsonl'))
 
     logging.info('Writing output {}'.format(output_file))
     for root, dirs, files in os.walk(args.input_dir):

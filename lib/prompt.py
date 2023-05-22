@@ -55,20 +55,6 @@ class GPTPrompt(Prompt):
         else:
             options['max_tokens'] = inputs['input_ids'].shape[1]
 
-        #options['max_tokens'] = max_model_tokens - inputs['input_ids'].shape[1]
-
-        # print(options['max_tokens'], inputs['input_ids'].shape[1])
-        # if '3' or '4' in options['engine']:
-        #     result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
-        # except BaseException as ex:
-            # import pdb;pdb.set_trace()
-            # print(f'Error: {ex}')
-            # {
-            #     "model": "text-davinci-edit-001",
-            #     "input": "What day of the wek is it?",
-            #     "instruction": "Fix the spelling mistakes",
-            # }
-            # Chat endpoints do not have the same engine
         if ('3' in options['engine']) or ('4' in options['engine']):
             options.update({'model': options['engine']})
             options.pop('engine')
@@ -142,8 +128,6 @@ class HFPrompt(Prompt):
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
         options['max_tokens'] = inputs['input_ids'].shape[1] * 2 + 1
-        # print(options['max_tokens'])
-        # import pdb;pdb.set_trace()
         try:
             max_model_tokens = self.model.config.max_position_embeddings
         except:
@@ -153,50 +137,39 @@ class HFPrompt(Prompt):
             inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
             options['max_tokens'] = max_model_tokens
 
-        # print(options['max_tokens'])
-        # print('--'*100)
-        # # import pdb;
-        # # pdb.set_trace()
-
         if search == 'greedy':
             # Greedy Search
-            result = self.tokenizer.decode(
-                self.model.generate(
-                    inputs["input_ids"],
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    temperature=options['temperature'],
-                    max_length=options['max_tokens']
-                )[0])
+            with torch.no_grad():
+                result = self.tokenizer.decode(
+                    self.model.generate(
+                        inputs["input_ids"],
+                        pad_token_id=self.tokenizer.eos_token_id,
+                        temperature=options['temperature'],
+                        max_length=options['max_tokens']
+                    )[0])
 
         elif search == 'beam':
             # Beam Search
-            result = self.tokenizer.decode(
-                self.model.generate(
-                    inputs["input_ids"],
-                    max_length=options['max_tokens'],
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    num_beams=2,
-                    no_repeat_ngram_size=2,
-                    early_stopping=True)[0])
+            with torch.no_grad():
+                result = self.tokenizer.decode(
+                    self.model.generate(
+                        inputs["input_ids"],
+                        max_length=options['max_tokens'],
+                        pad_token_id=self.tokenizer.eos_token_id,
+                        num_beams=2,
+                        no_repeat_ngram_size=2,
+                        early_stopping=True)[0])
         else:
             # in case no specific request, apply the best one: top-k
             # Sampling Top-k + Top-p
 
-            # with torch.no_grad():
-            #     generation_output = model.generate(
-            #         input_ids=input_ids,
-            #         generation_config=generation_config,
-            #         return_dict_in_generate=True,
-            #         output_scores=True,
-            #         max_new_tokens=max_new_tokens,
-            #     )
-
-            result = self.tokenizer.decode(
-                self.model.generate(
-                    input_ids=inputs["input_ids"],
-                    max_length=options['max_tokens'],
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    do_sample=True, top_k=50, top_p=0.9)[0])
+            with torch.no_grad():
+                result = self.tokenizer.decode(
+                    self.model.generate(
+                        input_ids=inputs["input_ids"],
+                        max_length=options['max_tokens'],
+                        pad_token_id=self.tokenizer.eos_token_id,
+                        do_sample=True, top_k=50, top_p=0.9)[0])
 
         # OPT adds the prompt in the response, so we are removing it
         last_comment_in_prompt = prompt.split('\n')[-1]

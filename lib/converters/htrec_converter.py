@@ -94,11 +94,11 @@ def process_file(
                                         } | {'article_id': article_id, 'century': str(century)})
                 outfile.write(json_line + "\n")
                 outfile.flush()
-        import jsonlines
-        with jsonlines.open(output_file, 'r') as g:
-            for x in g:
-                # import pdb;pdb.set_trace()
-                print(x)
+        # import jsonlines
+        # with jsonlines.open(output_file, 'r') as g:
+        #     for x in g:
+        #         # import pdb;pdb.set_trace()
+        #         print(x)
 
 
 if __name__ == "__main__":
@@ -159,3 +159,29 @@ if __name__ == "__main__":
                     dataset_name=dataset_name)
                 progress_bar.update(1)
     progress_bar.close()
+
+    # TRAIN SET
+    output_file = os.path.join(args.output_dir,
+                               '{}-train.jsonl'.format(dataset_name))
+    if os.path.exists(output_file):
+        logging.info('{} already exists. It will be deleted.')
+        os.remove(output_file)
+
+    logging.info('Writing output {}'.format(output_file))
+    for root, dirs, files in os.walk(args.input_dir):
+        for file in files:
+            print(file)
+            if file == "train.csv":
+                input_file = os.path.join(root, file)
+
+                logging.info('Analyzing file {}'.format(input_file))
+
+                process_file(
+                    input_file=input_file,
+                    output_file=output_file,
+                    dataset_name=dataset_name)
+                progress_bar.update(1)
+    progress_bar.close()
+
+
+

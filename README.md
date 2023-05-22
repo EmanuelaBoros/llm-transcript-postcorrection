@@ -92,7 +92,46 @@ python main.py --input_dir ../data/datasets/converted \
 
 ```
 
-#### 1-2-3 shot
+#### 3-5 shot
+
+
+#### Fine-tuning
+`export OPENAI_API_KEY="<OPENAI_API_KEY>"`
+```
+{"prompt": "<prompt text>", "completion": "<ideal generated text>"}
+{"prompt": "<prompt text>", "completion": "<ideal generated text>"}
+{"prompt": "<prompt text>", "completion": "<ideal generated text>"}
+...
+```
+
+`openai tools fine_tunes.prepare_data -f <LOCAL_FILE>`
+`openai api fine_tunes.create -t <TRAIN_FILE_ID_OR_PATH> -m <BASE_MODEL>`
+Every fine-tuning job starts from a base model, which defaults to curie. The choice of model influences both the performance of the model and the cost of running your fine-tuned model. Your model can be one of: ada, babbage, curie, or davinci. Visit our pricing page for details on fine-tune rates.
+`openai api fine_tunes.follow -i <YOUR_FINE_TUNE_JOB_ID>`
+```
+# List all created fine-tunes
+openai api fine_tunes.list
+
+# Retrieve the state of a fine-tune. The resulting object includes
+# job status (which can be one of pending, running, succeeded, or failed)
+# and other information
+openai api fine_tunes.get -i <YOUR_FINE_TUNE_JOB_ID>
+
+# Cancel a job
+openai api fine_tunes.cancel -i <YOUR_FINE_TUNE_JOB_ID>
+```
+
+Usage of the fine-tuned model:
+`openai api completions.create -m <FINE_TUNED_MODEL> -p <YOUR_PROMPT>`
+```
+import openai
+openai.Completion.create(
+    model=FINE_TUNED_MODEL,
+    prompt=YOUR_PROMPT)
+```
+Delete the model:
+`openai api models.delete -i <FINE_TUNED_MODEL>`
+  
 
 ### Models
 - gpt-3.5-turbo

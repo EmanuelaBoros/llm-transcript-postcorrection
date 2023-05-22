@@ -1,0 +1,76 @@
+# Install python and its packages
+FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+
+ENV LIBRARY_PATH=/usr/local/cuda/lib64/stubs
+SHELL ["/bin/bash", "-cu"]
+WORKDIR /
+ENV USER_NAME=eboros
+ENV HOME=/home/eboros
+
+# Install build tools and libraries
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential \
+    git curl vim unzip wget tmux screen ca-certificates apt-utils software-properties-common wget && \
+    apt-get update && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV SHELL=/bin/bash NB_USER=eboros NB_UID=268532 NB_GROUP=DHLAB-unit NB_GID=11703
+ENV HOME=/home/eboros
+RUN groupadd $NB_GROUP -g $NB_GID # buildkit
+RUN useradd -m -s /bin/bash -N -u $NB_UID -g $NB_GID $NB_USER && \
+    echo "${NB_USER}:${NB_USER}" | chpasswd && \
+    usermod -aG sudo,adm,root ${NB_USER} # buildkit
+RUN chown -R ${NB_USER}:${NB_GROUP} ${HOME} # buildkit
+RUN echo "${NB_USER} ALL = NOPASSWD: ALL" > /etc/sudoers # buildkit
+RUN echo "${NB_USER} ALL = NOPASSWD: ALL" > /etc/sudoers # buildkit
+
+USER eboros
+ENV CONDA_PREFIX=/home/eboros/.conda
+ENV CONDA=/home/eboros/.conda/condabin/conda
+WORKDIR /home/eboros/app
+
+# Change ownership of directories
+RUN chown -R ${NB_USER}:${NB_GROUP} ${HOME}
+RUN chown -R ${NB_USER}:${NB_GROUP} /home/eboros/app/
+
+# Switch back to eboros
+USER ${NB_USER}:${NB_GROUP}
+
+##RUN chown eboros:eboros /home/eboros/app/run_one.sh && chmod +x /home/eboros/app/run_one.sh
+#RUN chown -R ${NB_USER}:${NB_GROUP} ${HOME} # buildkit
+#RUN chown -R ${NB_USER}:${NB_GROUP} /home/eboros/app/ # buildkit
+
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
+    bash miniconda.sh -b -p ${CONDA_PREFIX} && \
+    rm miniconda.sh && \
+    ${CONDA} config --set auto_activate_base false && \
+    ${CONDA} init bash && \
+    ${CONDA} create --name myenv python=3.11
+
+RUN /home/eboros/.conda/condabin/conda create -n myenv python=3.11 pip
+RUN /home/eboros/.conda/condabin/conda run -n myenv pip install --upgrade pip setuptools
+RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
+	numpy scipy scikit-learn \
+	matplotlib seaborn \
+	pillow beautifulsoup4 fire \
+	pandas multidict \
+	langdetect openai \
+    nltk PyYAML pysbd \
+    textdistance jsonlines \
+    torch transformers
+RUN /home/eboros/.conda/condabin/conda run -n myenv pip install genalog==0.1.0 --no-deps
+
+COPY . /home/eboros/app
+
+#COPY run_one.sh /home/eboros/app/
+RUN chown -R ${NB_USER}:${NB_GROUP} /home/eboros/app/ # buildkit
+RUN ls -la
+
+WORKDIR /home/eboros/app
+
+# Ensure run_parallel.sh is executable
+RUN chmod +x /home/eboros/app/run_one.sh
+
+# Run run_parallel.sh when the container launches
+CMD ["./run_one.sh", "impresso", "prompt_basic_01.txt", "data/config_cluster.yml"]
