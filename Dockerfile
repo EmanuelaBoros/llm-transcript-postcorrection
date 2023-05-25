@@ -45,8 +45,8 @@ RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
 	numpy scipy scikit-learn \
 	matplotlib seaborn \
 	pillow beautifulsoup4 fire \
-	pandas multidict \
-	langdetect openai \
+	pandas multidict sentencepiece \
+	langdetect openai fairscale \
     nltk PyYAML pysbd \
     textdistance jsonlines \
     torch transformers sentencepiece
