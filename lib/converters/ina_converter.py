@@ -140,6 +140,7 @@ if __name__ == "__main__":
     for root, dirs, files in os.walk(args.input_dir):
         for file in files:
             if file.endswith("gt.txt"):
+                print(file)
                 input_gt_file = os.path.join(root, file)
                 input_asr_file = os.path.join(root, file.replace('.gt', ''))
                 logging.info('Analyzing file {}'.format(input_asr_file))
