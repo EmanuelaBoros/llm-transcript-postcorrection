@@ -122,6 +122,12 @@ def generate(
                             for json_line in f:
                                 lines.append(json_line)
                                 count += 1
+
+                    from retrying import retry
+                    @retry(stop_max_attempt_number=20, wait_exponential_multiplier=1000, wait_exponential_max=10000)
+                    def get_prediction(prompt, options):
+                        return instance.prediction(prompt, options)
+
                     already_done = {}
 
                     with jsonlines.open(output_file, mode) as f:
@@ -139,33 +145,25 @@ def generate(
                                 for TEXT_LEVEL in [Const.LINE, Const.SENTENCE, Const.REGION]:
                                     text = json_line[Const.OCR][TEXT_LEVEL]
                                     if text not in already_done:
-
                                         if text is not None:
-                                            # print(TEXT_LEVEL, text[:20])
                                             data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
-                                            # logger.info('--Text: {}'.format(data[Const.PREDICTION][Const.PROMPT]))
-
-                                            # loop = asyncio.get_event_loop()
                                             n = experiment_details["num_generate"]
                                             n_str = "samples" if n > 1 else "sample"
 
                                             options = {
                                                 'engine': model_name,
-                                                # 'temperature': 0.5,
                                                 'top_p': 1.0,
                                                 'frequency_penalty': 0,
                                                 'presence_penalty': 0
-                                                # 'max_tokens': max_tokens
                                             }
-
-                                            result = instance.prediction(
-                                                data[Const.PREDICTION][Const.PROMPT], options)
+                                            try:
+                                                result = get_prediction(data[Const.PREDICTION][Const.PROMPT], options)
+                                            except Exception as e:
+                                                logger.error(f"Error while getting prediction: {str(e)}")
+                                                continue
 
                                             data[Const.PREDICTION][TEXT_LEVEL] = result
-                                            # data[Const.PREDICTION].update({"num_generate": idx}) # TODO: for now, just one run
-
                                             already_done[text] = result
-
                                     else:
                                         data[Const.PREDICTION].update({TEXT_LEVEL: already_done[text]})
 
