@@ -11,6 +11,7 @@ import importlib
 import jsonlines
 import logging
 from const import Const
+
 logger = logging.getLogger("gpt-experiments")
 logger.setLevel(logging.INFO)
 
@@ -29,11 +30,12 @@ def get_dict(list_of_dicts: list):
 
 
 def generate(
-    input_dir: str = "../data/datasets",
-    output_dir: str = "../data/output",
-    prompt_dir: str = "../data/prompts",
-    config_file: str = "../data/config.yml",
-    device: str = 'cpu'
+        input_dir: str = "../data/datasets",
+        output_dir: str = "../data/output",
+        prompt_dir: str = "../data/prompts",
+        config_file: str = "../data/config.yml",
+        few_shot: bool = False,
+        device: str = 'cpu'
 ) -> None:
     """
     Generates texts via several models ni config and saves them to predictions files.
@@ -41,10 +43,11 @@ def generate(
     with open(config_file, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
-    openai.api_key = os.getenv("OPENAI_API_KEY") #config['SECRET_KEY']
+    openai.api_key = os.getenv("OPENAI_API_KEY")  # config['SECRET_KEY']
 
     prompt_path = os.path.join(prompt_dir, args.prompt)
     # If prompt is a file path, load the file as the prompt.
+
     if os.path.exists(prompt_path):
         logger.info(f"Loading prompt from {prompt_path}.")
         with open(prompt_path, "r", encoding="utf-8") as f:
@@ -64,11 +67,19 @@ def generate(
         model_class = experiment_details['class']
         # prompt_path = os.path.join(prompt_dir, experiment_details['prompt'])
 
-        results_dir = os.path.join(
-            output_dir,
-            args.prompt.replace(
-                '.txt',
-                ''))
+        if few_shot:
+            results_dir = os.path.join(
+                output_dir, 'few_shot',
+                args.prompt.replace(
+                    '.txt',
+                    ''))
+            print(results_dir)
+        else:
+            results_dir = os.path.join(
+                output_dir,
+                args.prompt.replace(
+                    '.txt',
+                    ''))
         if not os.path.exists(results_dir):
             os.makedirs(results_dir)
 
@@ -79,8 +90,9 @@ def generate(
             model=model_name,
             device=device)
 
+
         # Iterate in the data folder with all datasets
-        print(input_dir)
+        print('WHA', input_dir)
         for root, dirs, files in os.walk(input_dir, topdown=False):
             for name in files:
                 if 'jsonl' in name:
@@ -93,10 +105,16 @@ def generate(
                     if not os.path.exists(dataset_model_results_dir):
                         os.makedirs(dataset_model_results_dir)
 
-                    output_file = os.path.join(
-                        dataset_model_results_dir, 'results-{}-{}.jsonl'.format(
-                            dataset_name, model_name).replace(
-                            '/', '-'))
+                    if few_shot:
+                        output_file = os.path.join(
+                            dataset_model_results_dir, 'results-3few-shot-{}-{}.jsonl'.format(
+                                dataset_name, model_name).replace(
+                                '/', '-'))
+                    else:
+                        output_file = os.path.join(
+                            dataset_model_results_dir, 'results-{}-{}.jsonl'.format(
+                                dataset_name, model_name).replace(
+                                '/', '-'))
 
                     logger.info(
                         'Predictions for {} are saved in {}'.format(
@@ -141,13 +159,38 @@ def generate(
 
                                 data = {
                                     Const.PREDICTION: {
-                                        }
+                                    }
                                 }
+
                                 for TEXT_LEVEL in [Const.LINE, Const.SENTENCE, Const.REGION]:
                                     text = json_line[Const.OCR][TEXT_LEVEL]
                                     if text not in already_done:
                                         if text is not None:
-                                            data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
+
+                                            # attention for the few-shot scenario
+                                            if few_shot:
+                                                if 'ajmc' in dataset_name:
+                                                    language = 'el'
+                                                elif 'overproof' in dataset_name:
+                                                    language = 'en'
+                                                elif 'impresso' in dataset_name:
+                                                    language = 'de'
+                                                else:
+                                                    language = json_line['language']
+                                                prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name,
+                                                                           f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
+
+                                                if os.path.exists(prompt_path):
+                                                    logger.info(f"Loading prompt from {prompt_path}.")
+                                                    with open(prompt_path, "r", encoding="utf-8") as f:
+                                                        few_shot_prompt = f.read()
+                                                else:
+                                                    logger.info(f"Model prompt missing: {prompt_path}.")
+
+                                                data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
+                                            else:
+                                                data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
+
                                             n = experiment_details["num_generate"]
                                             n_str = "samples" if n > 1 else "sample"
 
@@ -172,13 +215,12 @@ def generate(
                                 f.write(data)
                                 # f.flush()
 
-                                    # data[Const.PREDICTION].update({Const.PROMPT: None})
+                                # data[Const.PREDICTION].update({Const.PROMPT: None})
 
                     progress_bar.close()
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -231,6 +273,11 @@ if __name__ == "__main__":
         dest="loglevel",
         const=logging.INFO,
     )
-
+    parser.add_argument(
+        "--few-shot",
+        help="Be verbose",
+        action="store_const",
+        dest="loglevel",
+    )
     args, _ = parser.parse_known_args()
     fire.Fire(generate)
