@@ -49,6 +49,7 @@ def generate(
         logger.info(f"Loading prompt from {prompt_path}.")
         with open(prompt_path, "r", encoding="utf-8") as f:
             prompt = f.read()
+            print(prompt)
     else:
         logger.info(f"Model prompt missing: {prompt_path}.")
 
