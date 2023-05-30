@@ -177,13 +177,13 @@ def generate(
                                                     language = 'de'
                                                 else:
                                                     language = json_line['language']
-                                                prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name,
+                                                prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace('_', '-'),
                                                                            f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
 
                                                 if os.path.exists(prompt_path):
                                                     logger.info(f"Loading prompt from {prompt_path}.")
-                                                    with open(prompt_path, "r", encoding="utf-8") as f:
-                                                        few_shot_prompt = f.read()
+                                                    with open(prompt_path, "r", encoding="utf-8") as g:
+                                                        few_shot_prompt = g.read()
                                                 else:
                                                     logger.info(f"Model prompt missing: {prompt_path}.")
 
@@ -208,6 +208,8 @@ def generate(
 
                                             data[Const.PREDICTION][TEXT_LEVEL] = result
                                             already_done[text] = result
+
+                                            # print(result)
                                     else:
                                         data[Const.PREDICTION].update({TEXT_LEVEL: already_done[text]})
 
