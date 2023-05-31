@@ -95,11 +95,12 @@ def generate(
         print('WHA', input_dir)
         for root, dirs, files in os.walk(input_dir, topdown=False):
             for name in files:
-                if 'jsonl' in name:
+                if name.endswith('jsonl'):
                     input_file = os.path.join(root, name)
 
                     logging.info(f'Post-correcting {input_file}')
                     dataset_name = name.replace('.jsonl', '')
+                    # print('-----', input_file, dataset_name)
 
                     dataset_model_results_dir = os.path.join(results_dir, dataset_name)
                     if not os.path.exists(dataset_model_results_dir):
@@ -175,6 +176,8 @@ def generate(
                                                     language = 'en'
                                                 elif 'impresso' in dataset_name:
                                                     language = 'de'
+                                                elif 'htrec' in dataset_name:
+                                                    language = 'el'
                                                 else:
                                                     language = json_line['language']
                                                 prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace('_', '-'),
@@ -204,6 +207,7 @@ def generate(
                                                 result = get_prediction(data[Const.PREDICTION][Const.PROMPT], options)
                                             except Exception as e:
                                                 logger.error(f"Error while getting prediction: {str(e)}")
+                                                import pdb;pdb.set_trace()
                                                 continue
 
                                             data[Const.PREDICTION][TEXT_LEVEL] = result
