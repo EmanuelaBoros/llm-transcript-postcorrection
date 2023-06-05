@@ -80,13 +80,13 @@ models:
 #          - 1.5
 #          - 1.9
 #          - 2.0
-#  - facebook/opt-350m: # OPT is very inconsistent
-#      - class: HFPrompt
-#      - prompt: prompt_complex_02.txt
-#      - num_generate: 1
-#      - temperatures:
-#          - 0.1
-#          - 0.5
+  - facebook/opt-350m: # OPT is very inconsistent
+      - class: HFPrompt
+      - prompt: prompt_complex_02.txt
+      - num_generate: 1
+      - temperatures:
+          - 0.1
+          - 0.5
 #  - facebook/opt-1.3b: # OPT is very inconsistent
 #      - class: HFPrompt
 #      - prompt: prompt_complex_02.txt

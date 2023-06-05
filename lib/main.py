@@ -207,7 +207,7 @@ def generate(
                                                 result = get_prediction(data[Const.PREDICTION][Const.PROMPT], options)
                                             except Exception as e:
                                                 logger.error(f"Error while getting prediction: {str(e)}")
-                                                import pdb;pdb.set_trace()
+                                                # import pdb;pdb.set_trace()
                                                 continue
 
                                             data[Const.PREDICTION][TEXT_LEVEL] = result
