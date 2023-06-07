@@ -41,18 +41,20 @@ class GPTPrompt(Prompt):
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
-
-
         if 'engine' in options:
             if 'davinci' in options['engine']:
                 max_model_tokens = 2049
-            else:
+            elif '2' in options['engine']:
                 max_model_tokens = 1024
+            else:
+                max_model_tokens = 4096
         elif 'model' in options['model']:
             if 'davinci' in options['model']:
                 max_model_tokens = 2049
-            else:
+            elif '2' in options['model']:
                 max_model_tokens = 1024
+            else:
+                max_model_tokens = 4096
         # print(options)
         if inputs['input_ids'].shape[1] > max_model_tokens // 2:
             inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
