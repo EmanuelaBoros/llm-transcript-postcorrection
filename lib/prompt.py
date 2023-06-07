@@ -41,13 +41,19 @@ class GPTPrompt(Prompt):
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
-        # print(options['max_tokens'])
 
-        if 'davinci' in options['engine']:
-            max_model_tokens = 2049
-        else:
-            max_model_tokens = 1024
 
+        if 'engine' in options:
+            if 'davinci' in options['engine']:
+                max_model_tokens = 2049
+            else:
+                max_model_tokens = 1024
+        elif 'model' in options['model']:
+            if 'davinci' in options['model']:
+                max_model_tokens = 2049
+            else:
+                max_model_tokens = 1024
+        # print(options)
         if inputs['input_ids'].shape[1] > max_model_tokens // 2:
             inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
             options['max_tokens'] = max_model_tokens//2
@@ -58,7 +64,8 @@ class GPTPrompt(Prompt):
 
         if ('3' in options['engine']) or ('4' in options['engine']):
             options.update({'model': options['engine']})
-            options.pop('engine')
+            if 'engine' in options:
+                options.pop('engine')
             result = openai.ChatCompletion.create(**options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
         else:
             result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']

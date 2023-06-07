@@ -47,8 +47,9 @@ def generate(
 
     prompt_path = os.path.join(prompt_dir, args.prompt)
     # If prompt is a file path, load the file as the prompt.
-
+    print(prompt_dir, args.prompt)
     if os.path.exists(prompt_path):
+
         logger.info(f"Loading prompt from {prompt_path}.")
         with open(prompt_path, "r", encoding="utf-8") as f:
             prompt = f.read()
@@ -100,7 +101,7 @@ def generate(
 
                     logging.info(f'Post-correcting {input_file}')
                     dataset_name = name.replace('.jsonl', '')
-                    # print('-----', input_file, dataset_name)
+                    print('-----', input_file, dataset_name)
 
                     dataset_model_results_dir = os.path.join(results_dir, dataset_name)
                     if not os.path.exists(dataset_model_results_dir):
@@ -145,7 +146,13 @@ def generate(
 
                     from retrying import retry
                     @retry(stop_max_attempt_number=20, wait_exponential_multiplier=1000, wait_exponential_max=10000)
-                    def get_prediction(prompt, options):
+                    def get_prediction(prompt, model_name):
+                        options = {
+                            'engine': model_name,
+                            'top_p': 1.0,
+                            'frequency_penalty': 0,
+                            'presence_penalty': 0
+                        }
                         return instance.prediction(prompt, options)
 
                     already_done = {}
@@ -170,6 +177,7 @@ def generate(
 
                                             # attention for the few-shot scenario
                                             if few_shot:
+                                                # import pdb;pdb.set_trace()
                                                 if 'ajmc' in dataset_name:
                                                     language = 'el'
                                                 elif 'overproof' in dataset_name:
@@ -178,17 +186,23 @@ def generate(
                                                     language = 'de'
                                                 elif 'htrec' in dataset_name:
                                                     language = 'el'
+                                                elif 'ina' in dataset_name:
+                                                    language = 'fr'
+                                                elif 'icdar-2017' in dataset_name:
+                                                    language = json_line['filename'].split('/')[-2].split('_')[0]
+                                                    if language == 'eng':
+                                                        language = 'en'
                                                 else:
                                                     language = json_line['language']
                                                 prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace('_', '-'),
                                                                            f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
 
                                                 if os.path.exists(prompt_path):
-                                                    logger.info(f"Loading prompt from {prompt_path}.")
+                                                    # logger.info(f"---Loading prompt from {prompt_path}.")
                                                     with open(prompt_path, "r", encoding="utf-8") as g:
                                                         few_shot_prompt = g.read()
                                                 else:
-                                                    logger.info(f"Model prompt missing: {prompt_path}.")
+                                                    logger.info(f"----Model prompt missing: {prompt_path}.")
 
                                                 data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
                                             else:
@@ -197,18 +211,13 @@ def generate(
                                             n = experiment_details["num_generate"]
                                             n_str = "samples" if n > 1 else "sample"
 
-                                            options = {
-                                                'engine': model_name,
-                                                'top_p': 1.0,
-                                                'frequency_penalty': 0,
-                                                'presence_penalty': 0
-                                            }
-                                            try:
-                                                result = get_prediction(data[Const.PREDICTION][Const.PROMPT], options)
-                                            except Exception as e:
-                                                logger.error(f"Error while getting prediction: {str(e)}")
-                                                # import pdb;pdb.set_trace()
-                                                continue
+
+                                            # try:
+                                            result = get_prediction(data[Const.PREDICTION][Const.PROMPT], model_name)
+                                            # except Exception as e:
+                                            #     logger.error(f"Error while getting prediction: {str(e)}")
+                                            #     # import pdb;pdb.set_trace()
+                                            #     continue
 
                                             data[Const.PREDICTION][TEXT_LEVEL] = result
                                             already_done[text] = result
