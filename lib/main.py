@@ -34,11 +34,11 @@ def generate(
         output_dir: str = "../data/output",
         prompt_dir: str = "../data/prompts",
         config_file: str = "../data/config.yml",
-        few_shot: bool = False,
+        few_shot: bool = True,
         device: str = 'cpu'
 ) -> None:
     """
-    Generates texts via several models ni config and saves them to predictions files.
+    Generates texts via several models in config and saves them to predictions files.
     """
     with open(config_file, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
@@ -69,6 +69,8 @@ def generate(
         # prompt_path = os.path.join(prompt_dir, experiment_details['prompt'])
 
         if few_shot:
+            # import pdb;
+            # pdb.set_trace()
             results_dir = os.path.join(
                 output_dir, 'few_shot',
                 args.prompt.replace(
@@ -107,7 +109,9 @@ def generate(
                     if not os.path.exists(dataset_model_results_dir):
                         os.makedirs(dataset_model_results_dir)
 
-                    if few_shot:
+
+                    if few_shot == True:
+                        print('BY HERE')
                         output_file = os.path.join(
                             dataset_model_results_dir, 'results-3few-shot-{}-{}.jsonl'.format(
                                 dataset_name, model_name).replace(
