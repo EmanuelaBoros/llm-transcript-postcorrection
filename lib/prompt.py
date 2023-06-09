@@ -55,17 +55,16 @@ class GPTPrompt(Prompt):
                 max_model_tokens = 1024
             else:
                 max_model_tokens = 4096
+        if len(inputs['input_ids']) > 4097:
+            inputs['input_ids'] = inputs['input_ids'][:, :4096]
 
-
-        print('max_model_tokens', max_model_tokens, inputs['input_ids'].shape[1])
+        # print('max_model_tokens', max_model_tokens, inputs['input_ids'].shape[1])
         if inputs['input_ids'].shape[1] > max_model_tokens // 2:
             inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
             options['max_tokens'] = max_model_tokens//2
 
-            if len(inputs['ínput_ids']) > 4097:
-                inputs['input_ids'] = inputs['input_ids'][:, :4096]
 
-            print('---', inputs['input_ids'].shape[1])
+            # print('---', inputs['input_ids'].shape[1])
 
             prompt = self.tokenizer.decode(*inputs['input_ids'])
         else:
