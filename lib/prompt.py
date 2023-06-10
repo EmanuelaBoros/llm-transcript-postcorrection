@@ -41,6 +41,7 @@ class GPTPrompt(Prompt):
 
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
+        max_model_tokens = 6144
         if 'engine' in options:
             if 'davinci' in options['engine']:
                 max_model_tokens = 2049
@@ -50,6 +51,7 @@ class GPTPrompt(Prompt):
                 max_model_tokens = 4096
             if '3' in options['engine']:
                 max_model_tokens = 2049
+
         elif 'model' in options['model']:
             if 'davinci' in options['model']:
                 max_model_tokens = 2049
@@ -60,32 +62,32 @@ class GPTPrompt(Prompt):
             if '3' in options['model']:
                 max_model_tokens = 2049
 
-
-        if len(inputs['input_ids']) >= 4097:
-            inputs['input_ids'] = inputs['input_ids'][:, :4096//2]
         if inputs['input_ids'].shape[1] > max_model_tokens:
-            inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens // 2]
+            inputs['input_ids'] = inputs['input_ids'][:, -(max_model_tokens // 2):]
             options['max_tokens'] = max_model_tokens
 
         # print('max_model_tokens', max_model_tokens, inputs['input_ids'].shape[1])
         if inputs['input_ids'].shape[1] > max_model_tokens // 2:
-            inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
+            inputs['input_ids'] = inputs['input_ids'][:, -(max_model_tokens // 2):]
             options['max_tokens'] = max_model_tokens//2
 
-
             # print('---', inputs['input_ids'].shape[1])
-
             prompt = self.tokenizer.decode(*inputs['input_ids'])
         else:
             options['max_tokens'] = inputs['input_ids'].shape[1]
 
         # print(inputs['input_ids'].shape[1], max_model_tokens)
+        # import pdb;pdb.set_trace()
         if ('3' in options['engine']) or ('4' in options['engine']):
             options.update({'model': options['engine']})
             if 'engine' in options:
                 options.pop('engine')
+
+            prompt = self.tokenizer.decode(inputs['input_ids'][0])
+            # import pdb;pdb.set_trace()
             result = openai.ChatCompletion.create(**options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
         else:
+            prompt = self.tokenizer.decode(inputs['input_ids'][0])
             result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
 
         return result
