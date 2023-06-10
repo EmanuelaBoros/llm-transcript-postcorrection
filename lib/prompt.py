@@ -48,6 +48,8 @@ class GPTPrompt(Prompt):
                 max_model_tokens = 1024
             else:
                 max_model_tokens = 4096
+            if '3' in options['engine']:
+                max_model_tokens = 2049
         elif 'model' in options['model']:
             if 'davinci' in options['model']:
                 max_model_tokens = 2049
@@ -55,8 +57,15 @@ class GPTPrompt(Prompt):
                 max_model_tokens = 1024
             else:
                 max_model_tokens = 4096
-        if len(inputs['input_ids']) > 4097:
-            inputs['input_ids'] = inputs['input_ids'][:, :4096]
+            if '3' in options['model']:
+                max_model_tokens = 2049
+
+
+        if len(inputs['input_ids']) >= 4097:
+            inputs['input_ids'] = inputs['input_ids'][:, :4096//2]
+        if inputs['input_ids'].shape[1] > max_model_tokens:
+            inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens // 2]
+            options['max_tokens'] = max_model_tokens
 
         # print('max_model_tokens', max_model_tokens, inputs['input_ids'].shape[1])
         if inputs['input_ids'].shape[1] > max_model_tokens // 2:
@@ -70,6 +79,7 @@ class GPTPrompt(Prompt):
         else:
             options['max_tokens'] = inputs['input_ids'].shape[1]
 
+        # print(inputs['input_ids'].shape[1], max_model_tokens)
         if ('3' in options['engine']) or ('4' in options['engine']):
             options.update({'model': options['engine']})
             if 'engine' in options:
