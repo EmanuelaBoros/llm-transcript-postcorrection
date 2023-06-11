@@ -34,7 +34,7 @@ def generate(
         output_dir: str = "../data/output",
         prompt_dir: str = "../data/prompts",
         config_file: str = "../data/config.yml",
-        few_shot: bool = True,
+        few_shot: bool = False,
         device: str = 'cpu'
 ) -> None:
     """
@@ -180,7 +180,8 @@ def generate(
                                         if text is not None:
 
                                             # attention for the few-shot scenario
-                                            if few_shot:
+                                            if True: # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
+                                            # if few_shot:
                                                 # import pdb;pdb.set_trace()
                                                 if 'ajmc' in dataset_name:
                                                     language = 'el'
@@ -198,8 +199,12 @@ def generate(
                                                         language = 'en'
                                                 else:
                                                     language = json_line['language']
-                                                prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace('_', '-'),
-                                                                           f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
+                                                # prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace('_', '-'),
+                                                #                            f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
+
+                                                # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
+                                                prompt_path = os.path.join(prompt_dir,
+                                                                           f'prompt_complex_03_{language}.txt')
 
                                                 if os.path.exists(prompt_path):
                                                     # logger.info(f"---Loading prompt from {prompt_path}.")
