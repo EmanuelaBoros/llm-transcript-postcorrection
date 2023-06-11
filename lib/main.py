@@ -67,7 +67,7 @@ def generate(
 
         model_class = experiment_details['class']
         # prompt_path = os.path.join(prompt_dir, experiment_details['prompt'])
-
+        print(few_shot)
         if few_shot:
             # import pdb;
             # pdb.set_trace()
@@ -80,9 +80,9 @@ def generate(
         else:
             results_dir = os.path.join(
                 output_dir,
-                args.prompt.replace(
-                    '.txt',
-                    ''))
+                args.prompt.replace('.txt', ''))
+            print(results_dir)
+            # import pdb;pdb.set_trace()
         if not os.path.exists(results_dir):
             os.makedirs(results_dir)
 
@@ -180,8 +180,8 @@ def generate(
                                         if text is not None:
 
                                             # attention for the few-shot scenario
-                                            if True: # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
-                                            # if few_shot:
+                                            # if True: # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
+                                            if few_shot:
                                                 # import pdb;pdb.set_trace()
                                                 if 'ajmc' in dataset_name:
                                                     language = 'el'
@@ -215,6 +215,7 @@ def generate(
 
                                                 data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
                                             else:
+                                                # import pdb;pdb.set_trace()
                                                 data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
 
                                             n = experiment_details["num_generate"]
