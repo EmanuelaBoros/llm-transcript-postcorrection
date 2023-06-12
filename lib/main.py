@@ -180,8 +180,8 @@ def generate(
                                         if text is not None:
 
                                             # attention for the few-shot scenario
-                                            if True: # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
-                                            #if few_shot:
+                                            # if True: # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
+                                            if few_shot:
                                                 # import pdb;pdb.set_trace()
                                                 if 'ajmc' in dataset_name:
                                                     language = 'el'
