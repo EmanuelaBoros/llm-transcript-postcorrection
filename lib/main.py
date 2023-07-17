@@ -3,8 +3,6 @@
 import openai
 import yaml
 import os
-import asyncio
-import fire
 import argparse
 from tqdm import tqdm
 import importlib
@@ -34,7 +32,8 @@ def generate(
         output_dir: str = "../data/output",
         prompt_dir: str = "../data/prompts",
         config_file: str = "../data/config.yml",
-        few_shot: bool = True,
+        few_shot: bool = False,
+        lang_specific: bool = False,
         device: str = 'cpu'
 ) -> None:
     """
@@ -55,7 +54,7 @@ def generate(
             prompt = f.read()
             print(prompt)
     else:
-        logger.info(f"Model prompt missing: {prompt_path}.")
+        logger.info(f"Model prompt missing: {prompt_path}. The prompt will be loaded dynamically.")
 
     for model in config['models']:
 
@@ -92,7 +91,6 @@ def generate(
             api_key=os.getenv("OPENAI_API_KEY"),
             model=model_name,
             device=device)
-
 
         # Iterate in the data folder with all datasets
         print('WHA', input_dir)
@@ -178,33 +176,29 @@ def generate(
                                     text = json_line[Const.OCR][TEXT_LEVEL]
                                     if text not in already_done:
                                         if text is not None:
+                                            # import pdb;pdb.set_trace()
+                                            if 'ajmc' in dataset_name:
+                                                language = 'el'
+                                            elif 'overproof' in dataset_name:
+                                                language = 'en'
+                                            elif 'impresso' in dataset_name:
+                                                language = 'de'
+                                            elif 'htrec' in dataset_name:
+                                                language = 'el'
+                                            elif 'ina' in dataset_name:
+                                                language = 'fr'
+                                            elif 'icdar-2017' in dataset_name:
+                                                language = json_line['filename'].split('/')[-2].split('_')[0]
+                                                if language == 'eng':
+                                                    language = 'en'
+                                            else:
+                                                language = json_line['language']
 
                                             # attention for the few-shot scenario
-                                            # if True: # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
-                                            if few_shot:
-                                                # import pdb;pdb.set_trace()
-                                                if 'ajmc' in dataset_name:
-                                                    language = 'el'
-                                                elif 'overproof' in dataset_name:
-                                                    language = 'en'
-                                                elif 'impresso' in dataset_name:
-                                                    language = 'de'
-                                                elif 'htrec' in dataset_name:
-                                                    language = 'el'
-                                                elif 'ina' in dataset_name:
-                                                    language = 'fr'
-                                                elif 'icdar-2017' in dataset_name:
-                                                    language = json_line['filename'].split('/')[-2].split('_')[0]
-                                                    if language == 'eng':
-                                                        language = 'en'
-                                                else:
-                                                    language = json_line['language']
+                                            if few_shot: #
+                                                # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
                                                 prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace('_', '-'),
                                                                            f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
-
-                                                # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
-                                                # prompt_path = os.path.join(prompt_dir,
-                                                #                            f'prompt_complex_03_{language}.txt')
 
                                                 if os.path.exists(prompt_path):
                                                     # logger.info(f"---Loading prompt from {prompt_path}.")
@@ -214,20 +208,24 @@ def generate(
                                                     logger.info(f"----Model prompt missing: {prompt_path}.")
 
                                                 data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
+
+                                            elif lang_specific:
+                                                prompt_path = os.path.join(prompt_dir,
+                                                                           f'prompt_complex_03_{language}.txt')
+                                                if os.path.exists(prompt_path):
+                                                    # logger.info(f"---Loading prompt from {prompt_path}.")
+                                                    with open(prompt_path, "r", encoding="utf-8") as g:
+                                                        lang_prompt = g.read()
+                                                else:
+                                                    logger.info(f"----Model prompt missing: {prompt_path}.")
+
+                                                data[Const.PREDICTION][Const.PROMPT] = lang_prompt.replace('{{TEXT}}', text)
                                             else:
                                                 # import pdb;pdb.set_trace()
                                                 data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
 
-                                            n = experiment_details["num_generate"]
-                                            n_str = "samples" if n > 1 else "sample"
 
-
-                                            # try:
                                             result = get_prediction(data[Const.PREDICTION][Const.PROMPT], model_name)
-                                            # except Exception as e:
-                                            #     logger.error(f"Error while getting prediction: {str(e)}")
-                                            #     # import pdb;pdb.set_trace()
-                                            #     continue
 
                                             data[Const.PREDICTION][TEXT_LEVEL] = result
                                             already_done[text] = result
@@ -300,9 +298,22 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--few-shot",
-        help="Be verbose",
-        action="store_const",
-        dest="loglevel",
+        help="few-shot",
+        action="store_true",
     )
-    args, _ = parser.parse_known_args()
-    fire.Fire(generate)
+    parser.add_argument(
+        "--lang-specific",
+        help="lang-specific",
+        action="store_true",
+    )
+
+    args = parser.parse_args()
+    print(args)
+
+    generate(args.input_dir,
+             args.output_dir,
+             args.prompt_dir,
+             args.config_file,
+             args.few_shot,
+             args.lang_specific,
+             args.device)
