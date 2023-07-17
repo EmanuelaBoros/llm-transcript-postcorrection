@@ -1,5 +1,5 @@
 # Set base image
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04
+FROM nvidia/cuda:11.0.3-cudnn8-devel-ubuntu20.04
 
 # Set environment variables for user
 ENV USER_NAME=eboros
@@ -15,6 +15,7 @@ RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential \
     git curl vim unzip wget tmux screen ca-certificates apt-utils software-properties-common wget && \
     apt-get install -y sudo && \
+    apt-get install openjdk-11-jdk && \
     apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -27,6 +28,8 @@ RUN useradd -ms /bin/bash -u $USER_ID -g $GROUP_ID $USER_NAME
 RUN echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Add Conda
+
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 ENV CONDA_PREFIX=/home/eboros/.conda
 ENV CONDA=/home/eboros/.conda/condabin/conda
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
@@ -49,9 +52,10 @@ RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
 	langdetect openai fairscale \
     nltk PyYAML pysbd \
     textdistance jsonlines \
-    torch transformers sentencepiece
-RUN /home/eboros/.conda/condabin/conda run -n myenv pip install genalog==0.1.0 --no-deps
+    torch transformers sentencepiece \
+    torch-model-archiver torchserve
 
+RUN /home/eboros/.conda/condabin/conda run -n myenv pip install genalog==0.1.0 --no-deps
 
 ENV PATH="/home/eboros/.conda/envs/myenv/bin:$PATH"
 
