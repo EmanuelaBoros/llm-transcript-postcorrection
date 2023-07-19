@@ -146,4 +146,11 @@ Delete the model:
 - bigscience/bloom
 - cerebras/Cerebras-GPT-1.3B
 
+### How To's
+
+#### Run a zero-shot scenario
+
+#### Run a few-shot scenario
+
+#### Run a language-specific scenario (zero-shot and few-shot)
 
