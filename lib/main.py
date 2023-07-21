@@ -9,7 +9,7 @@ import importlib
 import jsonlines
 import logging
 from const import Const
-
+from retrying import retry
 logger = logging.getLogger("gpt-experiments")
 logger.setLevel(logging.INFO)
 
@@ -107,7 +107,6 @@ def generate(
                     if not os.path.exists(dataset_model_results_dir):
                         os.makedirs(dataset_model_results_dir)
 
-
                     if few_shot == True:
                         print('BY HERE')
                         output_file = os.path.join(
@@ -146,7 +145,7 @@ def generate(
                                 lines.append(json_line)
                                 count += 1
 
-                    from retrying import retry
+
                     @retry(stop_max_attempt_number=20, wait_exponential_multiplier=1000, wait_exponential_max=10000)
                     def get_prediction(prompt, model_name):
                         options = {
@@ -194,8 +193,23 @@ def generate(
                                             else:
                                                 language = json_line['language']
 
+                                            if (few_shot == True) and (lang_specific == True):
+
+                                                prompt_path = os.path.join(prompt_dir, 'few_shot_lang',
+                                                                           dataset_name.replace('_', '-'),
+                                                                           f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
+
+                                                if os.path.exists(prompt_path):
+                                                    # logger.info(f"---Loading prompt from {prompt_path}.")
+                                                    with open(prompt_path, "r", encoding="utf-8") as g:
+                                                        few_shot_prompt = g.read()
+                                                else:
+                                                    logger.info(f"----Model prompt missing: {prompt_path}.")
+
+                                                data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
+
                                             # attention for the few-shot scenario
-                                            if few_shot: #
+                                            elif few_shot == True: #
                                                 # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
                                                 prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace('_', '-'),
                                                                            f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
@@ -209,7 +223,7 @@ def generate(
 
                                                 data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
 
-                                            elif lang_specific:
+                                            elif lang_specific == True:
                                                 prompt_path = os.path.join(prompt_dir,
                                                                            f'prompt_complex_03_{language}.txt')
                                                 if os.path.exists(prompt_path):
@@ -219,9 +233,9 @@ def generate(
                                                 else:
                                                     logger.info(f"----Model prompt missing: {prompt_path}.")
 
+                                                # else it takes the prompt from the arguments
                                                 data[Const.PREDICTION][Const.PROMPT] = lang_prompt.replace('{{TEXT}}', text)
                                             else:
-                                                # import pdb;pdb.set_trace()
                                                 data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
 
 
