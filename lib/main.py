@@ -32,8 +32,8 @@ def generate(
         output_dir: str = "../data/output",
         prompt_dir: str = "../data/prompts",
         config_file: str = "../data/config.yml",
-        few_shot: bool = False,
-        lang_specific: bool = False,
+        few_shot: bool = True,
+        lang_specific: bool = True,
         device: str = 'cpu'
 ) -> None:
     """
