@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os.path
 
 import openai
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -100,10 +101,17 @@ class HFPrompt(Prompt):
 
     def __init__(self, api_key=None, model="bigscience/bloom", device='cpu'):
 
+        self.model_name = model
         self.device = device
+        from llama import Llama
         if 'llama-2' in model.lower():
-            self.model = AutoModelForCausalLM.from_pretrained(model, ignore_mismatched_sizes=True).to(device)
-            self.tokenizer = AutoTokenizer.from_pretrained(model)
+            print('tokenizer path:', '/'.join(model.split('/')[:-2]))
+            self.model = Llama.build(
+                    ckpt_dir=model,
+                    tokenizer_path=os.path.join('/'.join(model.split('/')[:-2]), 'tokenizer.model'),
+                    max_seq_len=512,
+                    max_batch_size=1,
+                )
         elif 'llama' in model.lower():
 
             self.tokenizer = LlamaTokenizer.from_pretrained(model)
@@ -155,56 +163,68 @@ class HFPrompt(Prompt):
 
     def prediction(self, prompt, options=None, search='topk'):
 
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
-
-        options['max_tokens'] = inputs['input_ids'].shape[1] * 2 + 1
-        try:
-            max_model_tokens = self.model.config.max_position_embeddings
-        except:
-            max_model_tokens = 2048
-
-        if options['max_tokens'] > max_model_tokens:
-            inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
-            options['max_tokens'] = max_model_tokens
-
-        if search == 'greedy':
-            # Greedy Search
-            with torch.no_grad():
-                result = self.tokenizer.decode(
-                    self.model.generate(
-                        inputs["input_ids"],
-                        pad_token_id=self.tokenizer.eos_token_id,
-                        temperature=options['temperature'],
-                        max_length=options['max_tokens']
-                    )[0])
-
-        elif search == 'beam':
-            # Beam Search
-            with torch.no_grad():
-                result = self.tokenizer.decode(
-                    self.model.generate(
-                        inputs["input_ids"],
-                        max_length=options['max_tokens'],
-                        pad_token_id=self.tokenizer.eos_token_id,
-                        num_beams=2,
-                        no_repeat_ngram_size=2,
-                        early_stopping=True)[0])
+        if 'llama-2' in self.model_name.lower():
+            results = self.model.text_completion(
+                [prompt],
+                max_gen_len=512,
+                temperature=0.6,
+                top_p=0.9,
+            )
+            for prompt, result in zip(prompt, results):
+                print(prompt)
+                print(f"> {result['generation']}")
+                print("\n==================================\n")
         else:
-            # in case no specific request, apply the best one: top-k
-            # Sampling Top-k + Top-p
+            inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
-            with torch.no_grad():
-                result = self.tokenizer.decode(
-                    self.model.generate(
-                        input_ids=inputs["input_ids"],
-                        max_length=options['max_tokens'],
-                        pad_token_id=self.tokenizer.eos_token_id,
-                        do_sample=True, top_k=50, top_p=0.9)[0])
+            options['max_tokens'] = inputs['input_ids'].shape[1] * 2 + 1
+            try:
+                max_model_tokens = self.model.config.max_position_embeddings
+            except:
+                max_model_tokens = 2048
 
-        # OPT adds the prompt in the response, so we are removing it
-        last_comment_in_prompt = prompt.split('\n')[-1]
-        if last_comment_in_prompt in result:
-            result = result[result.index(
-                last_comment_in_prompt) + len(last_comment_in_prompt) + 1:]
+            if options['max_tokens'] > max_model_tokens:
+                inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
+                options['max_tokens'] = max_model_tokens
+
+            if search == 'greedy':
+                # Greedy Search
+                with torch.no_grad():
+                    result = self.tokenizer.decode(
+                        self.model.generate(
+                            inputs["input_ids"],
+                            pad_token_id=self.tokenizer.eos_token_id,
+                            temperature=options['temperature'],
+                            max_length=options['max_tokens']
+                        )[0])
+
+            elif search == 'beam':
+                # Beam Search
+                with torch.no_grad():
+                    result = self.tokenizer.decode(
+                        self.model.generate(
+                            inputs["input_ids"],
+                            max_length=options['max_tokens'],
+                            pad_token_id=self.tokenizer.eos_token_id,
+                            num_beams=2,
+                            no_repeat_ngram_size=2,
+                            early_stopping=True)[0])
+            else:
+                # in case no specific request, apply the best one: top-k
+                # Sampling Top-k + Top-p
+
+                with torch.no_grad():
+                    result = self.tokenizer.decode(
+                        self.model.generate(
+                            input_ids=inputs["input_ids"],
+                            max_length=options['max_tokens'],
+                            pad_token_id=self.tokenizer.eos_token_id,
+                            do_sample=True, top_k=50, top_p=0.9)[0])
+
+            # OPT adds the prompt in the response, so we are removing it
+            last_comment_in_prompt = prompt.split('\n')[-1]
+            if last_comment_in_prompt in result:
+                result = result[result.index(
+                    last_comment_in_prompt) + len(last_comment_in_prompt) + 1:]
 
         return result
