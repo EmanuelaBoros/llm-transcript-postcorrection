@@ -164,16 +164,18 @@ class HFPrompt(Prompt):
     def prediction(self, prompt, options=None, search='topk'):
 
         if 'llama-2' in self.model_name.lower():
-            results = self.model.text_completion(
-                [prompt],
-                max_gen_len=512,
-                temperature=0.6,
-                top_p=0.9,
-            )
-            for prompt, result in zip(prompt, results):
-                print(prompt)
-                print(f"> {result['generation']}")
-                print("\n==================================\n")
+            if len(prompt.split()) >= 512:
+                max_gen_len = 512
+            else:
+                max_gen_len = len(prompt.split())
+            results = self.model.text_completion([prompt], max_gen_len=max_gen_len, temperature=0.6, top_p=0.9)
+            # import pdb;
+            # pdb.set_trace()
+            # for prompt, result in zip([prompt], results):
+            #     print(prompt)
+            #     print(f"> {result['generation']}")
+            #     print("\n==================================\n")
+            return results[0]['generation']
         else:
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
