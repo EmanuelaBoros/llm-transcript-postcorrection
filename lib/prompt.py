@@ -101,7 +101,10 @@ class HFPrompt(Prompt):
     def __init__(self, api_key=None, model="bigscience/bloom", device='cpu'):
 
         self.device = device
-        if 'llama' in model.lower():
+        if 'llama-2' in model.lower():
+            self.model = AutoModelForCausalLM.from_pretrained(model, ignore_mismatched_sizes=True).to(device)
+            self.tokenizer = AutoTokenizer.from_pretrained(model)
+        elif 'llama' in model.lower():
 
             self.tokenizer = LlamaTokenizer.from_pretrained(model)
             self.model = LlamaForCausalLM.from_pretrained(model).to(device)
