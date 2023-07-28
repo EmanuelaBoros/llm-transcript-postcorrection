@@ -158,7 +158,7 @@ class HFPrompt(Prompt):
                 )
 
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(model).to(device)
+            self.model = AutoModelForCausalLM.from_pretrained(model, device_map='auto')#.to(device)
             self.tokenizer = AutoTokenizer.from_pretrained(model)
 
     def prediction(self, prompt, options=None, search='topk'):
