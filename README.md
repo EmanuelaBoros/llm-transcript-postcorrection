@@ -70,7 +70,7 @@ python main.py --input_dir ../data/datasets/converted \
                --device cpu
 ```
 
-### Prompts
+
 #### Zero-shot 
 
 *Example gpt-4:*
@@ -91,9 +91,6 @@ python main.py --input_dir ../data/datasets/converted \
 "prediction": "The European Commi66ion said on Thursday it disagreed with German advice to consumers to shun Brifish ss..ff lamb until scientists determine whether mad cow disease can be transmitted to sheep.\n\nThe new variant has been detected in a flock of 5 sheep in the north of England, although the exact origin of the strain is not known.\n\nAccording to the news service Reuters, officials at the National Health Service (NHS) will conduct a field test of the new variant to be able to determine its potential to spread through livestock.\n\nThere are fears that it is the most lethal type of cow virus known and is likely to be spread through the supply chain between sheep and pigs.\n\nThe new strain is the second in a series of attacks on beef animals since April. The first attack on lamb meat was in March when the strain was first detected in sheep in southern France.\n\nThe new mutation of cow virus caused a severe stomach upset in sheep in the United Kingdom and also caused stomach cancer in sheep in the north of France.</s>", "num_generate": 2}
 
 ```
-
-#### 3-5 shot
-
 
 #### Fine-tuning
 `export OPENAI_API_KEY="<OPENAI_API_KEY>"`
@@ -150,7 +147,37 @@ Delete the model:
 
 #### Run a zero-shot scenario
 
-#### Run a few-shot scenario
+## For the zero-shot scenario with the English prompts that increase in difficulty:
 
-#### Run a language-specific scenario (zero-shot and few-shot)
+```
+PROMPT in [prompt_basic_01.txt, prompt_basic_02.txt, prompt_complex_01.txt, prompt_complex_02.txt, prompt_complex_03_en.txt]
+```
+For the datasets [icdar-2017, icdar-2019, impresso-nzz, overproof], the ``PROMPT = prompt_complex_03.txt``
+```
+CUDA_VISIBLE_DEVICES=0 TOKENIZERS_PARALLELISM=false python main.py --input_dir ../data/datasets/ocr/converted/ajmc-mixed/ --output_dir ../data/output/ --config_file ../data/config.yml --prompt_dir ../data/prompts --device cuda --prompt prompt_basic_01.txt
+```
+
+for ``PROMP of complexity 03``:
+For the datasets [ajmc-mixed, ajmc-primary, htrec, ina]:
+```
+PROMPT in [prompt_complex_03_ajmc_mixed_en.txt, prompt_complex_03_ajmc_primary_en.txt, prompt_complex_03_htrec_en.txt, prompt_complex_03_ina_en.txt]
+```
+
+## For the zero-shot scenario with the language-specific prompts:
+For the datasets [icdar-2017, icdar-2019, impresso-nzz, overproof], the ``PROMPT = prompt_complex_03.txt``
+```
+CUDA_VISIBLE_DEVICES=0 TOKENIZERS_PARALLELISM=false python main.py --input_dir ../data/datasets/ocr/converted/icdar-2017/ --output_dir ../data/output/ --config_file ../data/config.yml --prompt_dir ../data/prompts --device cuda --prompt prompt_complex_03.txt
+```
+
+for ``PROMP of complexity 03``:
+For the datasets [ajmc-mixed, ajmc-primary, htrec, ina]:
+```
+PROMPT in [prompt_complex_03_ajmc_mixed_el.txt, prompt_complex_03_ajmc_primary_el.txt, prompt_complex_03_htrec_el.txt, prompt_complex_03_ina_fr.txt]
+```
+
+## For the few-shot scenario with the English prompts that increase in difficulty:
+
+## For the few-shot scenario with the language-specific prompts:
+
+
 
