@@ -202,11 +202,11 @@ def generate(
                                                 if os.path.exists(prompt_path):
                                                     # logger.info(f"---Loading prompt from {prompt_path}.")
                                                     with open(prompt_path, "r", encoding="utf-8") as g:
-                                                        few_shot_prompt = g.read()
+                                                        prompt = g.read()
                                                 else:
                                                     logger.info(f"----Model prompt missing: {prompt_path}.")
 
-                                                data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
+                                                data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
 
                                             # attention for the few-shot scenario
                                             elif few_shot == True: #
