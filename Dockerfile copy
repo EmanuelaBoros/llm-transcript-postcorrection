@@ -75,4 +75,5 @@ USER $USER_NAME
 # RUN chmod +x run_one.sh
 
 # Run run_parallel.sh when the container launches
+#CMD ["./run_one.sh", "impresso", "prompt_basic_01.txt", "data/config_cluster.yml"]
 CMD ["sleep", "infinity"]
