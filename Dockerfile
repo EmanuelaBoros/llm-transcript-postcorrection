@@ -2,21 +2,32 @@
 FROM nvidia/cuda:11.0.3-cudnn8-devel-ubuntu20.04
 
 # Set environment variables for user
-ENV USER_NAME=eboros
-ENV USER_ID=268532
 ENV GROUP_NAME=DHLAB-unit
 ENV GROUP_ID=11703
 
-# Install sudo
-#RUN apt-get update && apt-get install -y sudo
-
 # Install build tools and libraries
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends build-essential \
-    git curl vim unzip wget tmux screen ca-certificates apt-utils software-properties-common wget && \
-    apt-get install -y sudo && \
-    apt-get install openjdk-11-jdk && \
-    apt-get update && \
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        pkg-config \
+        software-properties-common
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    apt-utils \
+    git  \
+    curl  \
+    vim  \
+    unzip  \
+    wget  \
+    tmux  \
+    screen  \
+    wget \
+    sudo
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-11-jdk
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -27,11 +38,11 @@ RUN useradd -ms /bin/bash -u $USER_ID -g $GROUP_ID $USER_NAME
 # Add new user to sudoers
 RUN echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Add Conda
-
+# Add Conda & Java
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
-ENV CONDA_PREFIX=/home/eboros/.conda
-ENV CONDA=/home/eboros/.conda/condabin/conda
+ENV CONDA_PREFIX=/home/${USER_NAME}/.conda
+ENV CONDA=/home/${USER_NAME}/.conda/condabin/conda
+
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
     bash miniconda.sh -b -p ${CONDA_PREFIX} && \
     rm miniconda.sh && \
@@ -39,12 +50,12 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     ${CONDA} init bash && \
     ${CONDA} create --name myenv python=3.11
 
-ENV PATH="/home/eboros/.conda/envs/myenv/bin:$PATH"
+ENV PATH="/home/${USER_NAME}/.conda/envs/myenv/bin:$PATH"
 
-RUN /home/eboros/.conda/condabin/conda create -n myenv python=3.11 pip
+RUN /home/${USER_NAME}/.conda/condabin/conda create -n myenv python=3.11 pip
 
-RUN /home/eboros/.conda/condabin/conda run -n myenv pip install --upgrade pip setuptools
-RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
+RUN /home/${USER_NAME}/.conda/condabin/conda run -n myenv pip install --upgrade pip setuptools
+RUN /home/${USER_NAME}/.conda/condabin/conda run -n myenv pip install \
 	numpy scipy scikit-learn \
 	matplotlib seaborn \
 	pillow beautifulsoup4 fire \
@@ -55,9 +66,10 @@ RUN /home/eboros/.conda/condabin/conda run -n myenv pip install \
     torch transformers sentencepiece \
     torch-model-archiver torchserve
 
-RUN /home/eboros/.conda/condabin/conda run -n myenv pip install genalog==0.1.0 --no-deps
+RUN /home/${USER_NAME}/.conda/condabin/conda run -n myenv pip install genalog==0.1.0 --no-deps
 
-ENV PATH="/home/eboros/.conda/envs/myenv/bin:$PATH"
+ENV PATH="/home/${USER_NAME}/.conda/envs/myenv/bin:$PATH"
+ENV TRANSFORMERS_CACHE="/home/${USER_NAME}/dhlab-data/data/.cache/"
 
 # Set the working directory
 WORKDIR /home/$USER_NAME/app
@@ -74,5 +86,4 @@ USER $USER_NAME
 # Make sure your script is executable
 # RUN chmod +x run_one.sh
 
-# Run run_parallel.sh when the container launches
 CMD ["sleep", "infinity"]
