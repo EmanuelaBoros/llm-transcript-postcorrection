@@ -67,7 +67,13 @@ def generate(
         model_class = experiment_details['class']
         # prompt_path = os.path.join(prompt_dir, experiment_details['prompt'])
         print(few_shot)
-        if few_shot:
+        if few_shot == True and lang_specific == True:
+            results_dir = os.path.join(
+                output_dir, 'few_shot/prompt_complex_lang/',
+                args.prompt.replace(
+                    '.txt',
+                    ''))
+        elif few_shot:
             # import pdb;
             # pdb.set_trace()
             results_dir = os.path.join(
@@ -106,6 +112,7 @@ def generate(
                     dataset_model_results_dir = os.path.join(results_dir, dataset_name)
                     if not os.path.exists(dataset_model_results_dir):
                         os.makedirs(dataset_model_results_dir)
+
 
                     if few_shot == True:
                         print('BY HERE')
