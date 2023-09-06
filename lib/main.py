@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from torch import nn
 import openai
 import yaml
 import os
@@ -97,6 +97,7 @@ def generate(
             api_key=os.getenv("OPENAI_API_KEY"),
             model=model_name,
             device=device)
+
 
         # Iterate in the data folder with all datasets
         print('WHA', input_dir)

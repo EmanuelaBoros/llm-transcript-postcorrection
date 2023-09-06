@@ -5,7 +5,7 @@ import openai
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from transformers import LlamaForCausalLM, LlamaTokenizer
-
+from torch import nn
 
 class Prompt:
 
@@ -117,53 +117,21 @@ class HFPrompt(Prompt):
             self.tokenizer = LlamaTokenizer.from_pretrained(model)
             self.model = LlamaForCausalLM.from_pretrained(model).to(device)
 
-        elif "alpaca" in model.lower():
-            from peft import PeftModel
-
-            self.tokenizer = LlamaTokenizer.from_pretrained(
-                "decapoda-research/llama-7b-hf")
-
-            BASE_MODEL = "decapoda-research/llama-7b-hf"
-            LORA_WEIGHTS = "tloen/alpaca-lora-7b"
-
-            if device == "cuda":
-                model = LlamaForCausalLM.from_pretrained(
-                    BASE_MODEL,
-                    load_in_8bit=False,
-                    torch_dtype=torch.float16,
-                    device_map={"": device},
-                )
-                self.model = PeftModel.from_pretrained(
-                    model, LORA_WEIGHTS, torch_dtype=torch.float16, force_download=True)
-            elif device == "mps":
-                model = LlamaForCausalLM.from_pretrained(
-                    BASE_MODEL,
-                    device_map={"": device},
-                    torch_dtype=torch.float16,
-                )
-                self.model = PeftModel.from_pretrained(
-                    model,
-                    LORA_WEIGHTS,
-                    device_map={"": device},
-                    torch_dtype=torch.float16,
-                )
-            else:
-                model = LlamaForCausalLM.from_pretrained(
-                    BASE_MODEL, device_map={"": device}, low_cpu_mem_usage=True
-                )
-                self.model = PeftModel.from_pretrained(
-                    model,
-                    LORA_WEIGHTS,
-                    device_map={"": device},
-                )
-
         else:
             if 'llama' in model.lower():
-                self.tokenizer = LlamaTokenizer.from_pretrained(model) 
+                self.tokenizer = LlamaTokenizer.from_pretrained(model)
             else:
                 self.tokenizer = AutoTokenizer.from_pretrained(model)
-            self.model = AutoModelForCausalLM.from_pretrained(model).to(device)#, device_map='auto')#.to(device)
-            #self.tokenizer = AutoTokenizer.from_pretrained(model)
+            if torch.cuda.device_count() > 1:
+                self.model = AutoModelForCausalLM.from_pretrained(model, device_map='auto')
+            else:
+                self.model = AutoModelForCausalLM.from_pretrained(model).to(device)  # , device_map='auto')#.to(device)
+                # self.tokenizer = AutoTokenizer.from_pretrained(model)
+
+                # self.model = nn.DataParallel(self.model)
+                # import torch
+        self.model.to_bettertransformer()
+        # print(torch.cuda.device_count())
 
     def prediction(self, prompt, options=None, search='topk'):
 
