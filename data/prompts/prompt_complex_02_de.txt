@@ -1,3 +1,7 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c5b7f5a12b4382e9e48fadc64c88bd9dd21ecefc7dea064527b4120704178b31
-size 562
+Bitte unterstützen Sie bei der Überprüfung und Korrektur von Fehlern im aus historischen Dokumenten extrahierten OCR-Text. Ihre Aufgabe besteht darin, den folgenden Text sorgfältig zu prüfen und etwaige Fehler zu beheben, die durch die OCR-Software eingeführt wurden. Der zu korrigierende Text erscheint nach dem Abschnitt "ZU KORRIGIERENDER TEXT". Bitte platzieren Sie die korrigierte Version des Textes nach dem Abschnitt "KORRIGIERTER TEXT". Schreiben Sie nichts anderes als den korrigierten Text.
+
+ZU KORRIGIERENDER TEXT:
+{{TEXT}}
+
+KORRIGIERTER TEXT:
+
