@@ -231,9 +231,15 @@ def generate(
 
                                                 data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
 
-                                            elif lang_specific == True:
+                                            elif (lang_specific == True) and os.path.exists(prompt_path):
+                                                logger.info(f"---Loading prompt from {prompt_path}.")
+                                                with open(prompt_path, "r", encoding="utf-8") as g:
+                                                    lang_prompt = g.read()
+                                                data[Const.PREDICTION][Const.PROMPT] = lang_prompt.replace('{{TEXT}}', text)
+
+                                            elif lang_specific == True and (not os.path.exists(prompt_path)):
                                                 prompt_path = os.path.join(prompt_dir,
-                                                                           f'prompt_complex_03_{language}.txt')
+                                                                           f'prompt_complex_02_{language}.txt')
                                                 if os.path.exists(prompt_path):
                                                     # logger.info(f"---Loading prompt from {prompt_path}.")
                                                     with open(prompt_path, "r", encoding="utf-8") as g:
