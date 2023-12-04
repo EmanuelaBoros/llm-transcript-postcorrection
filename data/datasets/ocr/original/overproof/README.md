@@ -82,6 +82,11 @@ Results
 
 Evaluating the 159 articles containing 47,375 words gave the following results:
 
+
+torch-model-archiver --model-name nel --version 1.0 --serialized-file models_store/traced_model_nel.pt --handler model_handler.py --export-path models_store --extra-files "trained_models/model-nel/" --force
+
+
+
 	Uncorrected text	Corrected text
 Recall	83.8%	94.7%
 False positives	26.7%	8.7%
