@@ -74,14 +74,16 @@ def reconstruct_text(txt_lines, sentences):
 
         if start_index != -1:
             end_index = start_index + len(line)
-            line_index_mapping.append({"line": line, "start_index": start_index, "end_index": end_index})
+            line_index_mapping.append(
+                {"line": line, "start_index": start_index, "end_index": end_index})
 
     for sentence in sentences:
         start_index = reconstructed_text.find(sentence)
 
         if start_index != -1:
             end_index = start_index + len(sentence)
-            sentence_index_mapping.append({"sentence": sentence, "start_index": start_index, "end_index": end_index})
+            sentence_index_mapping.append(
+                {"sentence": sentence, "start_index": start_index, "end_index": end_index})
 
     return reconstructed_text, line_index_mapping, sentence_index_mapping
 
@@ -125,5 +127,3 @@ def map_lines_to_sentences(lines, sentences, ocr_lines, ocr_sentences):
                 ocr_result.append((ocr_lines[j], ocr_sentences[i]))
 
     return result, ocr_result
-
-

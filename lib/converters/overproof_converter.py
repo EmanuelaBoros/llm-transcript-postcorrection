@@ -1,3 +1,6 @@
+from utils import clean_text, align_texts
+from sklearn.model_selection import train_test_split
+from const import Const
 import os
 import argparse
 import logging
@@ -8,15 +11,12 @@ from langdetect import detect
 import sys
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(main_dir)
-from const import Const
-from sklearn.model_selection import train_test_split
-from utils import clean_text, align_texts
 
 
 def process_file(
-                 input_file: str,
-                 output_file: str,
-                 dataset_name: str) -> None:
+        input_file: str,
+        output_file: str,
+        dataset_name: str) -> None:
 
     # Parse the ground truth file
     with open(input_file, 'r') as f:
@@ -27,9 +27,11 @@ def process_file(
 
     language = detect(text)
 
-    articles_keep, articles_removed, _, _ = train_test_split(articles, articles, test_size=0.8, random_state=43)
+    articles_keep, articles_removed, _, _ = train_test_split(
+        articles, articles, test_size=0.8, random_state=43)
 
-    for element in zip([articles_keep, articles_removed], [output_file, output_file.replace('.jsonl', '-train.jsonl')]):
+    for element in zip([articles_keep, articles_removed], [
+                       output_file, output_file.replace('.jsonl', '-train.jsonl')]):
         files, output_file = element
         for article in files:
             if not article.strip():
@@ -56,8 +58,8 @@ def process_file(
             aligned_texts.append((gt_region_text, ocr_region_text, article_id))
 
             # Split in sentences and align
-            aligned_sentences = align_texts(gt_region_text,
-                                            ocr_region_text,
+            aligned_sentences = align_texts(ocr_region_text,
+                                            gt_region_text,
                                             language=language)
 
             gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line[0] for gt_line in aligned_lines], \
@@ -68,18 +70,20 @@ def process_file(
             # print(gt_lines, gt_sentences)
 
             from utils import map_lines_to_sentences
-            gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences,
-                                                                                             ocr_lines, ocr_sentences)
+            gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(
+                gt_lines, gt_sentences, ocr_lines, ocr_sentences)
 
             try:
-                assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
+                assert len(gt_reconstructed_sentences) == len(
+                    ocr_reconstructed_sentences)
             except BaseException:
                 import pdb
                 pdb.set_trace()
 
             # Append the output to a JSON Lines file
             with open(output_file, "a") as outfile:
-                for gt_element, ocr_element in zip(gt_reconstructed_sentences, ocr_reconstructed_sentences):
+                for gt_element, ocr_element in zip(
+                        gt_reconstructed_sentences, ocr_reconstructed_sentences):
                     (gt_line, gt_sentence) = gt_element
                     (ocr_line, ocr_sentence) = ocr_element
 
@@ -128,7 +132,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    total_files = sum([len([file for file in files if file.endswith(".txt")]) for r, d, files in os.walk(args.input_dir)])
+    total_files = sum([len([file for file in files if file.endswith(".txt")])
+                      for r, d, files in os.walk(args.input_dir)])
     progress_bar = tqdm(
         total=total_files,
         desc="Processing files",

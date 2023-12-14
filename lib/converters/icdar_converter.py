@@ -1,3 +1,9 @@
+from sklearn.model_selection import train_test_split
+import warnings
+import pandas as pd
+import glob
+from utils import clean_text, align_texts
+from const import Const
 import os
 import json
 import argparse
@@ -7,13 +13,8 @@ from langdetect import detect
 import sys
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(main_dir)
-from const import Const
-from utils import clean_text, align_texts
-import glob
-import pandas as pd
-import warnings
 warnings.filterwarnings('ignore')
-from sklearn.model_selection import train_test_split
+
 
 def load_metadada(args):
     metadata_path = None
@@ -116,8 +117,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-
-
     load_metadada(args)
 
     output_dir_path = args.input_dir.replace('original', 'converted')
@@ -145,12 +144,14 @@ if __name__ == "__main__":
                     langs.append(input_file.split('/')[-3])
 
     if len(files) > 200:
-        files_keep, files_removed, _, _ = train_test_split(files, langs, test_size=0.986, random_state=43)
+        files_keep, files_removed, _, _ = train_test_split(
+            files, langs, test_size=0.986, random_state=43)
         print(len(files_keep), len(files_removed))
         files = files_keep
     else:
         # icdar 2017
-        files_keep, files_removed, _, _ = train_test_split(files, langs, test_size=0.85, random_state=43)
+        files_keep, files_removed, _, _ = train_test_split(
+            files, langs, test_size=0.85, random_state=43)
         print(len(files_keep), len(files_removed))
         files = files_keep
     # total_files = sum([len(files) for r, d, files in os.walk(args.input_dir)])

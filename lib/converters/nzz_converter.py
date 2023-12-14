@@ -1,3 +1,5 @@
+from utils import clean_text, align_texts
+from const import Const
 import os
 from bs4 import BeautifulSoup
 import argparse
@@ -7,8 +9,6 @@ import json
 import sys
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(main_dir)
-from const import Const
-from utils import clean_text, align_texts
 
 
 def process_file(args,
@@ -59,11 +59,13 @@ def process_file(args,
 
                     # Extract the TextEquiv content for the TextLine in the
                     # ground truth and prediction files
-                    gt_line_text = clean_text(gt_line.findAll('TextEquiv')[-1].text.strip())
+                    gt_line_text = clean_text(
+                        gt_line.findAll('TextEquiv')[-1].text.strip())
 
                     ocr_line_text = None
                     try:
-                        ocr_line_text = clean_text(ocr_line.findAll('TextEquiv')[-1].text.strip())
+                        ocr_line_text = clean_text(
+                            ocr_line.findAll('TextEquiv')[-1].text.strip())
                         # ocr_line_text = ocr_line.find('TextEquiv').text.strip()
                     except BaseException as ex:
                         print(
@@ -84,28 +86,30 @@ def process_file(args,
                     aligned_sentences = align_texts(
                         gt_region_text, ocr_region_text, language=args.language)
 
-                gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line for gt_line, _ in aligned_lines], \
-                    [gt_sentence for gt_sentence, _ in aligned_sentences], \
-                    [ocr_line for _, ocr_line in aligned_lines], \
-                    [ocr_sentence for _, ocr_sentence in aligned_sentences]
+                gt_lines, gt_sentences, ocr_lines, ocr_sentences = [
+                    gt_line for gt_line, _ in aligned_lines], [
+                    gt_sentence for gt_sentence, _ in aligned_sentences], [
+                    ocr_line for _, ocr_line in aligned_lines], [
+                    ocr_sentence for _, ocr_sentence in aligned_sentences]
 
                 # print(gt_lines, gt_sentences)
 
                 from utils import map_lines_to_sentences
-                gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences,
-                                                                                                 ocr_lines, ocr_sentences)
+                gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(
+                    gt_lines, gt_sentences, ocr_lines, ocr_sentences)
 
                 try:
-                    assert len(gt_reconstructed_sentences) == len(ocr_reconstructed_sentences)
+                    assert len(gt_reconstructed_sentences) == len(
+                        ocr_reconstructed_sentences)
                 except BaseException:
                     import pdb
                     pdb.set_trace()
                 # Create the mapping list
 
-
                 # Append the output to a JSON Lines file
                 with open(output_file, "a") as outfile:
-                    for gt_element, ocr_element in zip(gt_reconstructed_sentences, ocr_reconstructed_sentences):
+                    for gt_element, ocr_element in zip(
+                            gt_reconstructed_sentences, ocr_reconstructed_sentences):
                         (gt_line, gt_sentence) = gt_element
                         (ocr_line, ocr_sentence) = ocr_element
                         json_line = json.dumps({Const.FILE: input_file,
@@ -133,10 +137,16 @@ if __name__ == "__main__":
         '--input_dir',
         type=str,
         help='Path to ground truth folder')
-    parser.add_argument('--ocr_dir', type=str, help='Path to OCRed folder',
-                        default='../../data/datasets/ocr/original/impresso-nzz/xml/ABBYY_FineReader_Server11')
-    parser.add_argument('--test_file_name', type=str, help='Path to OCRed folder',
-                        default='../../data/datasets/ocr/original/impresso-nzz/test-set-filenames.txt')
+    parser.add_argument(
+        '--ocr_dir',
+        type=str,
+        help='Path to OCRed folder',
+        default='../../data/datasets/ocr/original/impresso-nzz/xml/ABBYY_FineReader_Server11')
+    parser.add_argument(
+        '--test_file_name',
+        type=str,
+        help='Path to OCRed folder',
+        default='../../data/datasets/ocr/original/impresso-nzz/test-set-filenames.txt')
     parser.add_argument(
         "--output_dir",
         help="The path to the output directory where JSON Lines files will be created.")
@@ -160,7 +170,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    total_files = sum([len([file for file in files if file.endswith(".xml")]) for r, d, files in os.walk(args.input_dir)])
+    total_files = sum([len([file for file in files if file.endswith(".xml")])
+                      for r, d, files in os.walk(args.input_dir)])
     progress_bar = tqdm(
         total=total_files,
         desc="Processing files",
@@ -169,10 +180,14 @@ if __name__ == "__main__":
     output_dir_path = args.input_dir.replace('original', 'converted')
 
     dataset_name = args.input_dir.split('/')[-1]
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(dataset_name).lower())
+    output_file = os.path.join(
+        args.output_dir,
+        '{}.jsonl'.format(dataset_name).lower())
     if len(dataset_name.strip()) == 0:
         dataset_name = args.input_dir.split('/')[-2]
-        output_file = os.path.join(args.output_dir, '{}.jsonl'.format(dataset_name).lower())
+        output_file = os.path.join(
+            args.output_dir,
+            '{}.jsonl'.format(dataset_name).lower())
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)
@@ -213,20 +228,19 @@ if __name__ == "__main__":
     logging.info('Writing output {}'.format(output_file))
 
     for input_file, ocr_file in zip(files_keep, ocr_files_keep):
-            # if file in test_set_filenames:
-                # input_file = os.path.join(root, file)
-                # ocr_file = os.path.join(args.ocr_dir, file)
-                # print(input_file)
-                logging.info('Analyzing file {}'.format(input_file))
+        # if file in test_set_filenames:
+        # input_file = os.path.join(root, file)
+        # ocr_file = os.path.join(args.ocr_dir, file)
+        # print(input_file)
+        logging.info('Analyzing file {}'.format(input_file))
 
-                process_file(
-                    args=args,
-                    input_file=input_file,
-                    ocr_file=ocr_file,
-                    output_file=output_file,
-                    dataset_name=dataset_name)
-                progress_bar.update(1)
-
+        process_file(
+            args=args,
+            input_file=input_file,
+            ocr_file=ocr_file,
+            output_file=output_file,
+            dataset_name=dataset_name)
+        progress_bar.update(1)
 
     # Removing the OCRed files that are not in test-set-filenames.
     # There are more than the groundtruth.

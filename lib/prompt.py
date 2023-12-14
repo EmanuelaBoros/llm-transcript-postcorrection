@@ -7,6 +7,7 @@ import torch
 from transformers import LlamaForCausalLM, LlamaTokenizer
 from torch import nn
 
+
 class Prompt:
 
     def __call__(self, prompt, options=None, device='cpu'):
@@ -64,13 +65,15 @@ class GPTPrompt(Prompt):
                 max_model_tokens = 2049
 
         if inputs['input_ids'].shape[1] > max_model_tokens:
-            inputs['input_ids'] = inputs['input_ids'][:, -(max_model_tokens // 2):]
+            inputs['input_ids'] = inputs['input_ids'][:, -
+                                                      (max_model_tokens // 2):]
             options['max_tokens'] = max_model_tokens
 
         # print('max_model_tokens', max_model_tokens, inputs['input_ids'].shape[1])
         if inputs['input_ids'].shape[1] > max_model_tokens // 2:
-            inputs['input_ids'] = inputs['input_ids'][:, -(max_model_tokens // 2):]
-            options['max_tokens'] = max_model_tokens//2
+            inputs['input_ids'] = inputs['input_ids'][:, -
+                                                      (max_model_tokens // 2):]
+            options['max_tokens'] = max_model_tokens // 2
 
             # print('---', inputs['input_ids'].shape[1])
             prompt = self.tokenizer.decode(*inputs['input_ids'])
@@ -86,10 +89,12 @@ class GPTPrompt(Prompt):
 
             prompt = self.tokenizer.decode(inputs['input_ids'][0])
             # import pdb;pdb.set_trace()
-            result = openai.ChatCompletion.create(**options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
+            result = openai.ChatCompletion.create(
+                **options, messages=[{"role": "user", "content": prompt}])['choices'][0]['message']['content']
         else:
             prompt = self.tokenizer.decode(inputs['input_ids'][0])
-            result = openai.Completion.create(prompt=prompt, **options)['choices'][0]['text']
+            result = openai.Completion.create(
+                prompt=prompt, **options)['choices'][0]['text']
 
         return result
 
@@ -107,11 +112,11 @@ class HFPrompt(Prompt):
         if 'llama-2' in model.lower():
             print('tokenizer path:', '/'.join(model.split('/')[:-2]))
             self.model = Llama.build(
-                    ckpt_dir=model,
-                    tokenizer_path=os.path.join('/'.join(model.split('/')[:-2]), 'tokenizer.model'),
-                    max_seq_len=512,
-                    max_batch_size=1,
-                )
+                ckpt_dir=model,
+                tokenizer_path=os.path.join('/'.join(model.split('/')[:-2]), 'tokenizer.model'),
+                max_seq_len=512,
+                max_batch_size=1,
+            )
         elif 'llama' in model.lower():
 
             self.tokenizer = LlamaTokenizer.from_pretrained(model)
@@ -123,9 +128,11 @@ class HFPrompt(Prompt):
             else:
                 self.tokenizer = AutoTokenizer.from_pretrained(model)
             if torch.cuda.device_count() > 1:
-                self.model = AutoModelForCausalLM.from_pretrained(model, device_map='auto')
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    model, device_map='auto')
             else:
-                self.model = AutoModelForCausalLM.from_pretrained(model).to(device)  # , device_map='auto')#.to(device)
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    model).to(device)  # , device_map='auto')#.to(device)
                 # self.tokenizer = AutoTokenizer.from_pretrained(model)
 
                 # self.model = nn.DataParallel(self.model)
@@ -140,7 +147,8 @@ class HFPrompt(Prompt):
                 max_gen_len = 512
             else:
                 max_gen_len = len(prompt.split())
-            results = self.model.text_completion([prompt], max_gen_len=max_gen_len, temperature=0.6, top_p=0.9)
+            results = self.model.text_completion(
+                [prompt], max_gen_len=max_gen_len, temperature=0.6, top_p=0.9)
             # import pdb;
             # pdb.set_trace()
             # for prompt, result in zip([prompt], results):
@@ -149,16 +157,19 @@ class HFPrompt(Prompt):
             #     print("\n==================================\n")
             return results[0]['generation']
         else:
-            inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+            inputs = self.tokenizer(
+                prompt, return_tensors="pt").to(
+                self.device)
 
             options['max_tokens'] = inputs['input_ids'].shape[1] * 2 + 1
             try:
                 max_model_tokens = self.model.config.max_position_embeddings
-            except:
+            except BaseException:
                 max_model_tokens = 2048
 
             if options['max_tokens'] > max_model_tokens:
-                inputs['input_ids'] = inputs['input_ids'][:, :max_model_tokens//2]
+                inputs['input_ids'] = inputs['input_ids'][:,
+                                                          :max_model_tokens // 2]
                 options['max_tokens'] = max_model_tokens
 
             if search == 'greedy':

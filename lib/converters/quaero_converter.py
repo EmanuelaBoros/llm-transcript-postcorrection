@@ -1,3 +1,5 @@
+from utils import clean_text, align_texts
+from const import Const
 import os
 import argparse
 import logging
@@ -8,8 +10,6 @@ import re
 import sys
 main_dir = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 sys.path.append(main_dir)
-from const import Const
-from utils import clean_text, align_texts
 
 
 def remove_tags(text):
@@ -52,16 +52,17 @@ def process_file(args,
     aligned_sentences = align_texts(gt_region_text, ocr_region_text,
                                     language=language)
 
-    gt_lines, gt_sentences, ocr_lines, ocr_sentences = [gt_line for gt_line, _ in aligned_lines], \
-        [gt_sentence for gt_sentence, _ in aligned_sentences], \
-        [ocr_line for _, ocr_line in aligned_lines], \
-        [ocr_sentence for _, ocr_sentence in aligned_sentences]
+    gt_lines, gt_sentences, ocr_lines, ocr_sentences = [
+        gt_line for gt_line, _ in aligned_lines], [
+        gt_sentence for gt_sentence, _ in aligned_sentences], [
+            ocr_line for _, ocr_line in aligned_lines], [
+                ocr_sentence for _, ocr_sentence in aligned_sentences]
 
     # print(gt_lines, gt_sentences)
 
     from utils import map_lines_to_sentences
-    gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(gt_lines, gt_sentences,
-                                                                                     ocr_lines, ocr_sentences)
+    gt_reconstructed_sentences, ocr_reconstructed_sentences = map_lines_to_sentences(
+        gt_lines, gt_sentences, ocr_lines, ocr_sentences)
 
     try:
         assert len(gt_reconstructed_sentences) == len(
@@ -73,7 +74,8 @@ def process_file(args,
 
     # Append the output to a JSON Lines file
     with open(output_file, "a") as outfile:
-        for gt_element, ocr_element in zip(gt_reconstructed_sentences, ocr_reconstructed_sentences):
+        for gt_element, ocr_element in zip(
+                gt_reconstructed_sentences, ocr_reconstructed_sentences):
             (gt_line, gt_sentence) = gt_element
             (ocr_line, ocr_sentence) = ocr_element
             json_line = json.dumps({Const.FILE: input_file,
@@ -131,7 +133,9 @@ if __name__ == "__main__":
     output_dir_path = args.input_dir.replace('original', 'converted')
 
     dataset_name = args.input_dir.split('/')[-1]
-    output_file = os.path.join(args.output_dir, '{}.jsonl'.format(dataset_name).lower())
+    output_file = os.path.join(
+        args.output_dir,
+        '{}.jsonl'.format(dataset_name).lower())
     if os.path.exists(output_file):
         logging.info('{} already exists. It will be deleted.')
         os.remove(output_file)

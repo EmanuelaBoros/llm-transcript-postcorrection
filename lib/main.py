@@ -54,7 +54,8 @@ def generate(
             prompt = f.read()
             print(prompt)
     else:
-        logger.info(f"Model prompt missing: {prompt_path}. The prompt will be loaded dynamically.")
+        logger.info(
+            f"Model prompt missing: {prompt_path}. The prompt will be loaded dynamically.")
 
     for model in config['models']:
 
@@ -67,7 +68,7 @@ def generate(
         model_class = experiment_details['class']
         # prompt_path = os.path.join(prompt_dir, experiment_details['prompt'])
         print(few_shot)
-        if few_shot == True and lang_specific == True:
+        if few_shot and lang_specific:
             results_dir = os.path.join(
                 output_dir, 'few_shot/prompt_complex_lang/',
                 args.prompt.replace(
@@ -98,7 +99,6 @@ def generate(
             model=model_name,
             device=device)
 
-
         # Iterate in the data folder with all datasets
         print('WHA', input_dir)
         for root, dirs, files in os.walk(input_dir, topdown=False):
@@ -110,22 +110,28 @@ def generate(
                     dataset_name = name.replace('.jsonl', '')
                     print('-----', input_file, dataset_name)
 
-                    dataset_model_results_dir = os.path.join(results_dir, dataset_name)
+                    dataset_model_results_dir = os.path.join(
+                        results_dir, dataset_name)
                     if not os.path.exists(dataset_model_results_dir):
                         os.makedirs(dataset_model_results_dir)
 
-
-                    if few_shot == True:
+                    if few_shot:
                         print('BY HERE')
                         output_file = os.path.join(
-                            dataset_model_results_dir, 'results-3few-shot-{}-{}.jsonl'.format(
-                                dataset_name, model_name).replace(
-                                '/', '-'))
+                            dataset_model_results_dir,
+                            'results-3few-shot-{}-{}.jsonl'.format(
+                                dataset_name,
+                                model_name).replace(
+                                '/',
+                                '-'))
                     else:
                         output_file = os.path.join(
-                            dataset_model_results_dir, 'results-{}-{}.jsonl'.format(
-                                dataset_name, model_name).replace(
-                                '/', '-'))
+                            dataset_model_results_dir,
+                            'results-{}-{}.jsonl'.format(
+                                dataset_name,
+                                model_name).replace(
+                                '/',
+                                '-'))
 
                     logger.info(
                         'Predictions for {} are saved in {}'.format(
@@ -144,8 +150,9 @@ def generate(
 
                     if os.path.exists(output_file):
                         mode = 'a'
-                        logging.info('We found the results file {}. We will continue predicting from where it was '
-                                     'left off.'.format(output_file))
+                        logging.info(
+                            'We found the results file {}. We will continue predicting from where it was '
+                            'left off.'.format(output_file))
                         lines = []
                         count = 0
                         with jsonlines.open(output_file, 'r') as f:
@@ -153,8 +160,9 @@ def generate(
                                 lines.append(json_line)
                                 count += 1
 
-
-                    @retry(stop_max_attempt_number=20, wait_exponential_multiplier=1000, wait_exponential_max=10000)
+                    @retry(stop_max_attempt_number=20,
+                           wait_exponential_multiplier=1000,
+                           wait_exponential_max=10000)
                     def get_prediction(prompt, model_name):
                         options = {
                             'engine': model_name,
@@ -179,7 +187,8 @@ def generate(
                                     }
                                 }
 
-                                for TEXT_LEVEL in [Const.LINE, Const.SENTENCE, Const.REGION]:
+                                for TEXT_LEVEL in [
+                                        Const.LINE, Const.SENTENCE, Const.REGION]:
                                     text = json_line[Const.OCR][TEXT_LEVEL]
                                     if text not in already_done:
                                         if text is not None:
@@ -195,72 +204,87 @@ def generate(
                                             elif 'ina' in dataset_name:
                                                 language = 'fr'
                                             elif 'icdar-2017' in dataset_name:
-                                                language = json_line['filename'].split('/')[-2].split('_')[0]
+                                                language = json_line['filename'].split(
+                                                    '/')[-2].split('_')[0]
                                                 if language == 'eng':
                                                     language = 'en'
                                             else:
                                                 language = json_line['language']
 
-                                            if (few_shot == True) and (lang_specific == True):
+                                            if (few_shot) and (lang_specific):
 
-                                                prompt_path = os.path.join(prompt_dir, 'few_shot_lang',
-                                                                           dataset_name.replace('_', '-'),
-                                                                           f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
+                                                prompt_path = os.path.join(prompt_dir, 'few_shot_lang', dataset_name.replace(
+                                                    '_', '-'), f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
 
                                                 if os.path.exists(prompt_path):
                                                     # logger.info(f"---Loading prompt from {prompt_path}.")
                                                     with open(prompt_path, "r", encoding="utf-8") as g:
                                                         prompt = g.read()
                                                 else:
-                                                    logger.info(f"----Model prompt missing: {prompt_path}.")
+                                                    logger.info(
+                                                        f"----Model prompt missing: {prompt_path}.")
 
-                                                data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
+                                                data[Const.PREDICTION][Const.PROMPT] = prompt.replace(
+                                                    '{{TEXT}}', text)
 
-                                            # attention for the few-shot scenario
-                                            elif few_shot == True: #
-                                                # TODO: lack of time, workaround here in few-shot ==> transform it temporarily to lang-specific
-                                                prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace('_', '-'),
-                                                                           f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
+                                            # attention for the few-shot
+                                            # scenario
+                                            elif few_shot:
+                                                # TODO: lack of time,
+                                                # workaround here in few-shot
+                                                # ==> transform it temporarily
+                                                # to lang-specific
+                                                prompt_path = os.path.join(prompt_dir, 'few_shot', dataset_name.replace(
+                                                    '_', '-'), f'{args.prompt.replace(".txt", "")}_{TEXT_LEVEL}_{language}.txt')
 
                                                 if os.path.exists(prompt_path):
                                                     # logger.info(f"---Loading prompt from {prompt_path}.")
                                                     with open(prompt_path, "r", encoding="utf-8") as g:
                                                         few_shot_prompt = g.read()
                                                 else:
-                                                    logger.info(f"----Model prompt missing: {prompt_path}.")
+                                                    logger.info(
+                                                        f"----Model prompt missing: {prompt_path}.")
 
-                                                data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace('{{TEXT}}', text)
+                                                data[Const.PREDICTION][Const.PROMPT] = few_shot_prompt.replace(
+                                                    '{{TEXT}}', text)
 
-                                            elif (lang_specific == True) and os.path.exists(prompt_path):
-                                                logger.info(f"---Loading prompt from {prompt_path}.")
+                                            elif (lang_specific) and os.path.exists(prompt_path):
+                                                logger.info(
+                                                    f"---Loading prompt from {prompt_path}.")
                                                 with open(prompt_path, "r", encoding="utf-8") as g:
                                                     lang_prompt = g.read()
-                                                data[Const.PREDICTION][Const.PROMPT] = lang_prompt.replace('{{TEXT}}', text)
+                                                data[Const.PREDICTION][Const.PROMPT] = lang_prompt.replace(
+                                                    '{{TEXT}}', text)
 
-                                            elif lang_specific == True and (not os.path.exists(prompt_path)):
-                                                prompt_path = os.path.join(prompt_dir,
-                                                                           f'prompt_complex_02_{language}.txt')
+                                            elif lang_specific and (not os.path.exists(prompt_path)):
+                                                prompt_path = os.path.join(
+                                                    prompt_dir, f'prompt_complex_02_{language}.txt')
                                                 if os.path.exists(prompt_path):
                                                     # logger.info(f"---Loading prompt from {prompt_path}.")
                                                     with open(prompt_path, "r", encoding="utf-8") as g:
                                                         lang_prompt = g.read()
                                                 else:
-                                                    logger.info(f"----Model prompt missing: {prompt_path}.")
+                                                    logger.info(
+                                                        f"----Model prompt missing: {prompt_path}.")
 
-                                                # else it takes the prompt from the arguments
-                                                data[Const.PREDICTION][Const.PROMPT] = lang_prompt.replace('{{TEXT}}', text)
+                                                # else it takes the prompt from
+                                                # the arguments
+                                                data[Const.PREDICTION][Const.PROMPT] = lang_prompt.replace(
+                                                    '{{TEXT}}', text)
                                             else:
-                                                data[Const.PREDICTION][Const.PROMPT] = prompt.replace('{{TEXT}}', text)
+                                                data[Const.PREDICTION][Const.PROMPT] = prompt.replace(
+                                                    '{{TEXT}}', text)
 
-
-                                            result = get_prediction(data[Const.PREDICTION][Const.PROMPT], model_name)
+                                            result = get_prediction(
+                                                data[Const.PREDICTION][Const.PROMPT], model_name)
 
                                             data[Const.PREDICTION][TEXT_LEVEL] = result
                                             already_done[text] = result
 
                                             # print(result)
                                     else:
-                                        data[Const.PREDICTION].update({TEXT_LEVEL: already_done[text]})
+                                        data[Const.PREDICTION].update(
+                                            {TEXT_LEVEL: already_done[text]})
 
                                 data = json_line | data
                                 f.write(data)
