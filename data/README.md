@@ -20,14 +20,14 @@ data/
 │   │   ├── htrec/*csv
 │   └── converted/
 │   │   └── htrec.jsonl
-├── ocr/
-│   ├── original/
-│   │   ├── ajmc/*tsv
-│   │   ├── icdar-2017/*txt
-│   │   ├── icdar-2019/*txt
-│   │   ├── impresso-nzz/*xml
-│   │   └── overproof/*txt
-└── └── converted/
+└── ocr/
+    ├── original/
+    │   ├── ajmc/*tsv
+    │   ├── icdar-2017/*txt
+    │   ├── icdar-2019/*txt
+    │   ├── impresso-nzz/*xml
+    │   └── overproof/*txt
+    └── converted/
         ├── ajmc.jsonl
         ├── icdar-2017.jsonl
         ├── icdar-2019.jsonl
