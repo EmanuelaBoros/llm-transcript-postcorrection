@@ -16,7 +16,7 @@ The folder fpresents the eight post-correction benchmarks, each comprising two h
 | Dataset       | Document Type            | Origin | Time Period | Language               | # Lines | # Sentences | # Regions |
 |---------------|--------------------------|--------|-------------|------------------------|---------|-------------|-----------|
 | icdar-2017    | newspapers, monographies | OCR    | 17C-20C     | en, fr                 | 0       | 461         | 28        |
-| icdar-2019    | OCR                      |        | not specified | bg, cz, en, fr, de, pl, sl | 0   | 404         | 41        |
+| icdar-2019    |                          | OCR    | not specified | bg, cz, en, fr, de, pl, sl | 0   | 404         | 41        |
 | overproof     | newspaper                | OCR    | 19-20C      | en                     | 2,278   | 399         | 41        |
 | impresso-nzz  | newspaper                | OCR    | 18-20C      | de                     | 1,256   | 577         | 203       |
 | ajmc-mixed    | class. commentaries      | OCR    | 19C         | grc, de, en, fr        | 535     | 379         | 33        |
