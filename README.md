@@ -61,7 +61,7 @@ git pull origin main
 
 ### Models
 
-Details [here]().
+Details [here](lib/).
 
 | Model     | Release Date | Sizes         | Access  | Max Length |
 |-----------|--------------|---------------|---------|------------|
@@ -77,7 +77,7 @@ Details [here]().
 
 ### Datasets
 
-Details [here]().
+Details [here](data/).
 
 | Dataset       | Document Type            | Origin | Time Period | Language               | # Lines | # Sentences | # Regions |
 |---------------|--------------------------|--------|-------------|------------------------|---------|-------------|-----------|
@@ -92,4 +92,4 @@ Details [here]().
 
 ### Experiments
 
-Details [here]().
+Details [here](lib/).

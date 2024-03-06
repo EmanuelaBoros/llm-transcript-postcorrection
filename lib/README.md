@@ -1,7 +1,25 @@
 # Experimental Setup
 
+The methodology involves comparing the similarities between original automated transcriptions and their ground truth (GT), and between LLM-corrected versions and GT, to evaluate improvements or degradations, in the following setups:
+* zero-shot
+* few-shot (3-shot)
+* basic/complex and language-specific prompts
 
-# Repository Structure
+### Models
+
+| Model     | Release Date | Sizes         | Access  | Max Length |
+|-----------|--------------|---------------|---------|------------|
+| GPT-2     | 11.2019      | 1.5B          | Open    | 1,024      |
+| GPT-3     | 06.2020      | 175B          | Limited | 2,049      |
+| GPT-3.5   | 03.2023      | Unknown       | Limited | 4,096      |
+| GPT-4     | 03.2023      | Unknown       | Limited | 8,192      |
+| BLOOM     | 07.2022      | 560M, 3B, 7.1B | Open    | 2,048      |
+| BLOOMZ    | 11.2022      | 560M, 3B, 7.1B | Open    | 2,048      |
+| OPT       | 05.2022      | 350M, 6.7B    | Open    | 2,048      |
+| LLaMA     | 02.2023      | 7B            | Open    | 2,048      |
+| LLaMA-2   | 07.2023      | 7B            | Open    | 4,096      |
+
+### Repository Structure
 
 ```
 lib/
@@ -91,5 +109,3 @@ TOKENIZERS_PARALLELISM=false python main.py \
 - `--output_dir`: Output directory tailored for few-shot and language-specific processing.
 - `--lang-specific`: Indicates that the processing should consider language-specific features or settings.
 - `--few-shot`: Enables few-shot learning mode, as in Command 2.
-
-Each command is tailored for specific datasets and processing needs, demonstrating how to utilize environment variables, command-line arguments, and flags for diverse dataset processing tasks.

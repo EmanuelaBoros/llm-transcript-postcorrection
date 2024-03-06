@@ -44,21 +44,6 @@ data/
         └── overproof.jsonl
 ```
 
-## Top-Level Folders
-
-- `docs/`: Contains documentation files like setup instructions, usage examples, and FAQs.
-- `src/`: Houses the source code, including main application code and tests, organized by programming language.
-- `data/`: Stores data files, organized into raw, processed, and final datasets.
-- `notebooks/`: Jupyter notebooks for exploratory data analysis and model training.
-- `scripts/`: Shell scripts for tasks like preprocessing data and deploying applications.
-- `config/`: Configuration files for different environments (development, production, etc.).
-
-# Data Format Explanation
-
-This data structure is used for holding and comparing OCR-generated text with its manually corrected version, known as the ground truth. It is part of the "overproof" project focused on OCR post-correction benchmarks.
-
-## Structure Overview
-
 - `data/`: Root directory containing all data related to the project.
   - `asr/`: Directory for Automatic Speech Recognition (ASR) data.
     - `original/`: Contains the original ASR data files.
