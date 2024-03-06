@@ -45,7 +45,7 @@ pip install git+https://github.com/huggingface/transformers
 ### Datasets
 
 
-| Dataset      | Alias                | Document Type          | Origin | Time Period | Language         | # Lines | # Sentences | # Regions |
+| Dataset Alias | Document Type          | Origin | Time Period | Language         | # Lines | # Sentences | # Regions |
 |--------------|----------------------|------------------------|--------|-------------|------------------|---------|-------------|-----------|
 | icdar-2017   | newspapers, monographies | OCR                    | 17C-20C| en, fr      | 0       | 461       | 28        |
 | icdar-2019   |                      | OCR                    |        | bg, cz, en, fr, de, pl, sl | 0       | 404       | 41        |
