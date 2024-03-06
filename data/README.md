@@ -1,3 +1,4 @@
+# Data Description
 
 The folder fpresents the eight post-correction benchmarks, each comprising two historical transcriptions: an automated system's output needing correction, and its corresponding ground truth. These versions are aligned at various levels without any images of the original documents. The selection of benchmarks was influenced by diversity and the need for transcripts of adequate length to offer sufficient context for Large Language Models (LLMs).
 
