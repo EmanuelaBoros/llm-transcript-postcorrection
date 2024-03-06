@@ -39,9 +39,9 @@ llm-transcript-postcorrection/
         └── impresso-nzz.jsonl
 ```
 
-* `lib`: main codebase for the experiments. Details [here]().
-* `notebooks`: Jupyter notebooks for data error analysis. Details [here]().
-* `data`: the data samples utilised in our experimental setup. Details [here]().
+* `lib`: main codebase for the experiments. Details [here](lib/).
+* `notebooks`: Jupyter notebooks for data error analysis. Details [here](notebooks/).
+* `data`: the data samples utilised in our experimental setup. Details [here](data/).
 
 ### Requirements
 `>= python 3.9`

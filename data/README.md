@@ -109,4 +109,26 @@ This data structure is used for holding and comparing OCR-generated text with it
 ### `article_id`
 
 - A unique identifier for the article, including metadata like publication year (`year`), article type (`type`), and a URL to the original source or PDF (`title`).
-- 
+
+## Example of a JSON Line
+
+A JSON line (`.jsonl` file) contains multiple JSON objects, each on a separate line. Here is a simplified example of what one line in a `.jsonl` file might look like for this dataset:
+
+```json
+{
+  "filename": "data/ocr/original/overproof/sample.txt",
+  "dataset_name": "overproof",
+  "groundtruth": {
+    "line": "historical event took",
+    "sentence": "The historical event took place in the late 19th century.",
+    "region": " The historical event took place in the late 19th century. 
+                It was a significant occurrence during that period."
+  },
+  "ocr": {
+    "line": "historLal evnt took",
+    "sentence": "The historical evnt took place in the late 19th century.",
+    "region": " The historical evnt took place in the late 19th century. 
+                It ws a significant occurrence during that period."
+  },
+  "article_id": "year 1899 type Article title http://example.com/sample.pdf"
+}
