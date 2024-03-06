@@ -213,3 +213,4 @@ class HFPrompt(Prompt):
                     last_comment_in_prompt) + len(last_comment_in_prompt) + 1:]
 
         return result
+
