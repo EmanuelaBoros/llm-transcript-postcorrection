@@ -3,52 +3,21 @@
 [![PyTorch 1.13](https://img.shields.io/badge/PyTorch-1.3-EE4C2C.svg?logo=pytorch)](https://pytorch.org/docs/1.13/) 
 [![MIT](https://img.shields.io/badge/License-MIT-3DA639.svg?logo=open-source-initiative)](LICENSE)
 
-The quality of automatic transcription of heritage documents, whether from printed, manuscripts or audio sources, has a decisive impact on the ability to search and process historical texts. Although significant progress has been made in text recognition (OCR, HTR, ASR), textual materials derived from library and archive collections remain largely erroneous and noisy. Effective post-transcription correction methods are therefore necessary and have been intensively researched for many years. As large language models (LLMs) have recently shown exceptional performances in a variety of text-related tasks, we investigate their ability to amend poor historical transcriptions. We evaluate fourteen foundation language models against various post-correction benchmarks comprising different languages, time periods and document types, as well as different transcription quality and origins. We compare the performance of different model sizes and different prompts of increasing complexity in zero and few-shot settings. Our evaluation shows that LLMs are anything but efficient at this task. Quantitative and qualitative analyses of results allow us to share valuable insights for future work on post-correcting historical texts with LLMs.
-
 ## Overview
 
-This is the repository for the work on HTR/OCR/ASR post-correction based on LLMs.
+The quality of transcriptions of heritage documents produced by optical character recognition (OCR, for printed documents), handwritten text recognition (HTR, for manuscripts) or automatic speech recognition  (ASR, for audio documents) has a major impact on the ability to search and process historical texts. This is the implementation of [Post-correction of Historical Text Transcripts with Large Language Models: An Exploratory Study](https://infoscience.epfl.ch/record/307961).
 
-#### In general:
-_Are GPT (contemporary) language models fit for historical texts?_
+#### Can LLMs amend poor historical transcriptions?
 
-#### In particular:
-_Can GPT (contemporary) language models correct automatically transcribed text from cultural heritage collections?_
+* **Ability to correct.** Do LLMs improve, degrade, or leave the input text intact?
+* **Sensitivity to variations in input text and instructions.** Does LLM post-correction performance depend on the noise of the original document? How sensitive is it to prompt instructions?
+* **Real-world applicability.** How do open-access models compare with the limited-access ones? Could millions of noisy historical documents be easily corrected?
 
-The objective of this project is to test the capacity of GPT (and not only) language models to correct text.
+## Repository organisation
 
-## Organization
-
-`data/config.yml`- configuration file for all LLMs and theire specificities
-Example for GPT-4 and and example prompt `prompt_basic_01.txt`:
-```
-max_tokens: 512
-
-# Lists for loops
-models:
-  - gpt-4:
-      - class: GPTPrompt
-      - prompt: prompt_basic_01.txt
-      - num_generate: 1
-      - temperatures:
-          - 0.1
-          - 0.5
-          - 0.9
-          - 1.0
-          - 1.5
-          - 1.9
-          - 2.0
-  ```
-
-`data/datasets`- folder with the datasets (for now, just a simulated datatset `test`)
-
-`data/prompts/`- folder with the prompts in format `txt`
-Example `prompt_basic_01.txt`:
-```
-Correct the text: {{TEXT}}
-```
-
-`data/outputs/`- folder with the results per prompt type
+`lib`: main codebase for the experiments. Details [here]().
+`notebooks`: Jupyter notebooks for data error analysis. Details [here]().
+`data`: the data samples utilised in our experimental setup. Details [here]().
 
 ### Requirements
 `>= python 3.9`
@@ -59,23 +28,8 @@ Here is a from-scratch script.
 # install dependencies
 pip install -r lib/requirements.txt
 
-For LLama:
-Install 🤗 Transformers from source with the following command:
-
 pip install git+https://github.com/huggingface/transformers
 ```
-Costs GPT can be seen at our [OpenAI group](https://platform.openai.com/account/usage).
-
-## Inference
-
-```python
-python main.py --input_dir ../data/datasets/converted \
-               --output_dir ../data/outputs \
-               --config_file ../data/config.yml \
-               --prompt_dir ../data/prompts \
-               --device cpu
-```
-
 
 #### Zero-shot 
 
