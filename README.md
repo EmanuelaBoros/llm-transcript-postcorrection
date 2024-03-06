@@ -28,6 +28,7 @@ pip install -r lib/requirements.txt
 # install transformers from the repository
 pip install git+https://github.com/huggingface/transformers
 ```
+This repository is configured for Git LFS with available documentation [here](https://git-lfs.com/).
 
 ### Models
 
