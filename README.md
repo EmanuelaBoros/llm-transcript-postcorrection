@@ -15,6 +15,30 @@ The quality of transcriptions of heritage documents produced by optical characte
 
 ## Repository organisation
 
+```
+llm-transcript-postcorrection/
+├── data/
+│   ├── datasets/
+│   │   └── ina/*txt,*xml
+│   └── prompts/
+│   └── config.yml
+├── lib/
+│   ├── converters/
+│   └── modules/
+└── notebooks/
+    ├── original/
+    │   ├── ajmc/*tsv
+    │   ├── icdar-2017/*txt
+    │   ├── icdar-2019/*txt
+    │   ├── impresso-nzz/*xml
+    │   └── overproof/*txt
+    └── converted/
+        ├── ajmc.jsonl
+        ├── icdar-2017.jsonl
+        ├── icdar-2019.jsonl
+        └── impresso-nzz.jsonl
+```
+
 * `lib`: main codebase for the experiments. Details [here]().
 * `notebooks`: Jupyter notebooks for data error analysis. Details [here]().
 * `data`: the data samples utilised in our experimental setup. Details [here]().
