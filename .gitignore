@@ -6,6 +6,16 @@ __pycache__/
 .DS_Store
 */.DS_Store
 
+
+data/processed_data
+data/processed_data/*
+data/samples
+data/samples/*
+data/output
+data/output/*
+
+data/statistics-results.xls
+
 OLD/
 OLD/*
 
