@@ -15,36 +15,49 @@ The folder presents the eight post-correction benchmarks, each comprising two hi
 
 ### Organisation
 
-# Repository Structure
-
-```
+````
 data/
-├── asr/
-│   ├── original/
-│   │   └── ina/*txt,*xml
-│   └── converted/
-│   │   └── ina.jsonl
-├── htr/
-│   ├── original/
-│   │   ├── htrec/*csv
-│   └── converted/
-│   │   └── htrec.jsonl
-└── ocr/
-    ├── original/
-    │   ├── ajmc/*tsv
-    │   ├── icdar-2017/*txt
-    │   ├── icdar-2019/*txt
-    │   ├── impresso-nzz/*xml
-    │   └── overproof/*txt
-    └── converted/
-        ├── ajmc.jsonl
-        ├── icdar-2017.jsonl
-        ├── icdar-2019.jsonl
-        ├── impresso-nzz.jsonl
-        └── overproof.jsonl
-```
+├── datasets/
+│   ├── asr/
+│   │   ├── original/
+│   │   │   └── ina/
+│   │   │       ├── *txt
+│   │   │       └── *xml
+│   │   └── converted/
+│   │       └── ina.jsonl
+│   ├── htr/
+│   │   ├── original/
+│   │   │   └── htrec/
+│   │   │       └── *csv
+│   │   └── converted/
+│   │       └── htrec.jsonl
+│   └── ocr/
+│       ├── original/
+│       │   ├── ajmc/
+│       │   │   └── *tsv
+│       │   ├── icdar-2017/
+│       │   │   └── *txt
+│       │   ├── icdar-2019/
+│       │   │   └── *txt
+│       │   ├── impresso-nzz/
+│       │   │   └── *xml
+│       │   └── overproof/
+│       │       └── *txt
+│       └── converted/
+│           ├── ajmc.jsonl
+│           ├── icdar-2017.jsonl
+│           ├── icdar-2019.jsonl
+│           ├── impresso-nzz.jsonl
+│           └── overproof.jsonl
+└── prompts/
+    ├── prompt1.txt
+    ├── prompt2.txt
+    ├── prompt3.txt
+    ...
+    └── promptN.txt
+````
 
-- `data/`: Root directory containing all data related to the project.
+- `datasets/`: Root directory containing all data related to the project.
   - `asr/`: Directory for Automatic Speech Recognition (ASR) data.
     - `original/`: Contains the original ASR data files.
       - `ina/*txt, *xml`: Original ASR files for the INA dataset, in text and XML formats.
@@ -68,6 +81,20 @@ data/
       - `icdar-2019.jsonl`: Converted OCR data for the ICDAR-2019 dataset, in JSON Lines format.
       - `impresso-nzz.jsonl`: Converted OCR data for the Impresso-NZZ dataset, in JSON Lines format.
       - `overproof.jsonl`: Converted OCR data for the Overproof dataset, in JSON Lines format.
+- `prompts/`: Directory containing various prompts used to guide or initiate specific processes.
+  - `basic/`: Contains basic prompts for initial or simple tasks. Examples:
+    - `prompt_basic_01.txt`
+    - `prompt_basic_02.txt`
+    Complex prompts for more advanced tasks.
+    - `prompt_complex_01.txt`
+    - `prompt_complex_02.txt`
+    Prompts tailored to specific languages.
+    - `prompt_complex_02_fr.txt`
+    - `prompt_de.txt`
+  - `few_shot/`: Contains prompts designed for few-shot for each dataset.
+    - `htrec/`
+    - `ina/`
+  ...
 
 ## Detailed Components
 
