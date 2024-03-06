@@ -47,7 +47,7 @@ lib/
   - `main.py`: The main script that orchestrates the execution of conversions or other operations.
   - `prompt.py`: A script for generating prompts or handling input/output operations.
   
-
+---
 ### Examples of Usage
 
 The provided commands are examples of how to run our main experimental setup (`main.py`) with various parameters and flags for processing datasets using specific configurations. Each command sets up the environment and specifies options for dataset processing. Here's a detailed explanation of each command:

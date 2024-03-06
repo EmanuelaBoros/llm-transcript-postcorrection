@@ -24,7 +24,7 @@ The datasets are publicly available and have been collected from various sources
 * ajmc-primary: internal dataset available only for research purposes, copyright type: (CC BY-NC-ND 4.0)[https://creativecommons.org/licenses/by-nc-nd/4.0/].
 * htrec: [HTRec Handwritten Text Recognition Dataset](https://www.aicrowd.com/challenges/htrec-2022)
 * ina: internal dataset available only for research purposes, copyright type: (CC BY-NC-ND 4.0)[https://creativecommons.org/licenses/by-nc-nd/4.0/].
-
+---
 ### Organisation
 
 ````
@@ -107,8 +107,8 @@ data/
     - `htrec/`
     - `ina/`
   ...
-
-## Detailed Components
+---
+## Data Format
 
 ### `filename`
 
