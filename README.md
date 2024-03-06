@@ -30,6 +30,9 @@ pip install git+https://github.com/huggingface/transformers
 ```
 
 ### Models
+
+Details [here]().
+
 | Model     | Release Date | Sizes         | Access  | Max Length |
 |-----------|--------------|---------------|---------|------------|
 | GPT-2     | 11.2019      | 1.5B          | Open    | 1,024      |
@@ -44,6 +47,8 @@ pip install git+https://github.com/huggingface/transformers
 
 ### Datasets
 
+Details [here]().
+
 | Dataset       | Document Type            | Origin | Time Period | Language               | # Lines | # Sentences | # Regions |
 |---------------|--------------------------|--------|-------------|------------------------|---------|-------------|-----------|
 | icdar-2017    | newspapers, monographies | OCR    | 17C-20C     | en, fr                 | 0       | 461         | 28        |
@@ -54,6 +59,7 @@ pip install git+https://github.com/huggingface/transformers
 | ajmc-primary  | class. commentaries      | OCR    | 19C         | grc, de, en, fr        | 40      | 27          | 9         |
 | htrec         | papyri and manuscripts   | HTR    | 10C-16C     | grc                    | 180     | 8           | 8         |
 | ina           | radio programs           | ASR    | 20C         | fr                     | 201     | 290         | 6         |
-```
 
+### Experiments
 
+Details [here]().
