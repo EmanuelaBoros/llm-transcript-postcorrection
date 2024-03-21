@@ -26,17 +26,7 @@ llm-transcript-postcorrection/
 │   ├── converters/
 │   └── modules/
 └── notebooks/
-    ├── original/
-    │   ├── ajmc/*tsv
-    │   ├── icdar-2017/*txt
-    │   ├── icdar-2019/*txt
-    │   ├── impresso-nzz/*xml
-    │   └── overproof/*txt
-    └── converted/
-        ├── ajmc.jsonl
-        ├── icdar-2017.jsonl
-        ├── icdar-2019.jsonl
-        └── impresso-nzz.jsonl
+    └── ResultsGeneration.ipynb
 ```
 
 * `lib`: main codebase for the experiments. Details [here](lib/).
