@@ -56,11 +56,16 @@ data/
 │       │   └── overproof/
 │       │       └── *txt
 │       └── converted/
-│           ├── ajmc.jsonl
-│           ├── icdar-2017.jsonl
-│           ├── icdar-2019.jsonl
-│           ├── impresso-nzz.jsonl
-│           └── overproof.jsonl
+│           ├── ajmc/
+│           │   └──  ajmc.jsonl
+│           ├── icdar-2017/
+│           │   └── icdar-2017.jsonl
+│           ├── icdar-2019/
+│           │   └── icdar-2019.jsonl
+│           ├── impresso-nzz/
+│           │   └── impresso-nzz.jsonl
+│           └── overproof/
+│               └── overproof.jsonl
 └── prompts/
     ├── prompt1.txt
     ├── prompt2.txt
