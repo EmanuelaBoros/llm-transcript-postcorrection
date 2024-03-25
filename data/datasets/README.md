@@ -19,8 +19,8 @@ The datasets are publicly available and have been collected from various sources
 * icdar-2017: [ICDAR2017 Competition on Post-OCR Text Correction](https://hal.science/hal-03025499v1/file/icdar2017-competition-post%283%29.pdf)
 * icdar-2019: [ICDAR2019 Competition on Post-OCR Text Correction](https://sites.google.com/view/icdar2019-postcorrectionocr)
 * overproof: [Overproof OCR Dataset](https://overproof.projectcomputing.com/evaluation)
-* impresso-nzz: internal dataset available only for research purposes, copyright type: (CC BY-NC-ND 4.0)[https://creativecommons.org/licenses/by-nc-nd/4.0/].
-* ajmc-mixed: internal dataset available only for research purposes, copyright type: (CC BY-NC-ND 4.0)[https://creativecommons.org/licenses/by-nc-nd/4.0/].
-* ajmc-primary: internal dataset available only for research purposes, copyright type: (CC BY-NC-ND 4.0)[https://creativecommons.org/licenses/by-nc-nd/4.0/].
+* impresso-nzz: internal dataset available only for research purposes, copyright type: [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+* ajmc-mixed: internal dataset available only for research purposes, copyright type: [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+* ajmc-primary: internal dataset available only for research purposes, copyright type: [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
 * htrec: [HTRec Handwritten Text Recognition Dataset](https://www.aicrowd.com/challenges/htrec-2022)
-* ina: internal dataset available only for research purposes, copyright type: (CC BY-NC-ND 4.0)[https://creativecommons.org/licenses/by-nc-nd/4.0/].
+* ina: internal dataset available only for research purposes, copyright type: [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
