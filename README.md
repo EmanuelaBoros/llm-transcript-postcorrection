@@ -87,7 +87,7 @@ Details [here](lib/).
 ### Citation
 
 ```
-@article{boros2024post,
+@article{boros_post_2024,
   title={Post-correction of Historical Text Transcripts with Large Language Models: An Exploratory Study},
   author={Boros, Emanuela and Ehrmann, Maud and Romanello, Matteo and Najem-Meyer, Sven and Kaplan, Fr{\'e}d{\'e}ric},
   journal={LaTeCH-CLfL 2024},
@@ -95,5 +95,4 @@ Details [here](lib/).
   year={2024},
   publisher={The Association for Computational Linguistics}
 }
-
 ```
